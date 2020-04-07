@@ -19,7 +19,9 @@ Alfonso cuenta con la ayuda de Jeremías, un gatete microscópico que durante to
 
 ## Estilo y Música
 Coming Soon
+
 ##Screenshots
 Coming Soon
+
 ##Link de descarga
 Este repositorio, supongo
