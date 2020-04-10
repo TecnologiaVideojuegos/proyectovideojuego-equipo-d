@@ -2,9 +2,8 @@ from JOTPK.Classes import Weapon
 
 
 class Character:
-    def __init__(self, heart_number, pos_x, pos_y, speed, hp):  # add weapon
-
-        self.heart_number = heart_number
+    def __init__(self, pos_x, pos_y, speed, hp): # muere de un golpe
+        
         self.weapon = Weapon
         self.pos_x = pos_x
         self.pos_y = pos_y
