@@ -10,7 +10,7 @@ class Enemy(Character):
     def drop(self):
         """
         Elige un item al azar del drop list y lo retorna
-        List -> String
+        None -> String
         """
         return self.drop_list[randint(0, len(self.drop_list)-1)]  # no tengo en cuenta droprate
 
