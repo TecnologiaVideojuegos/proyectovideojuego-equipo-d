@@ -1,4 +1,4 @@
-from JOTPK.Classes import Weapon
+from Classes import Weapon
 
 
 class Character:

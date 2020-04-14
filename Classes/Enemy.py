@@ -1,4 +1,4 @@
-from JOTPK.Classes import Character
+from Classes import Character
 from random import *
 
 

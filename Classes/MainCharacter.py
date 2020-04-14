@@ -1,5 +1,5 @@
-from JOTPK.Classes import Character
-from JOTPK.Classes import Weapon
+from Classes import Character
+from Classes import Weapon
 
 class MainCharacter(Character):
     def __init__(self, pos_x, pos_y, speed, hp, money):

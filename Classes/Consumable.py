@@ -1,4 +1,4 @@
-from JOTPK.Classes import Item
+from Classes import Item
 
 
 class Consumable(Item):
