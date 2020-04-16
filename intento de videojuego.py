@@ -4,7 +4,7 @@ from random import *
 screen_width = 700
 screen_height = 700
 screen_title = "Journey of the Prairie King"
-sprite_scaling = 2
+sprite_scaling = 1
 
 
 class Character:
@@ -140,16 +140,25 @@ class Game(arcade.Window):
         self.player_sprite = None
         self.bullet_sprite = None
 
-        # background
-        self.background_image = None
+        # map sprites
+        self.suelo_paredes = None
+        self.cosas = None
+        self.obstaculos = None
+
 
     def setup(self):
         """
         Set up the game and initialize the variables. Call this function to restart the game
         """
 
-        # load background
-        # self.background_image = arcade.load_texture("")
+        # Load map
+        my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/entrada.tmx")
+
+        # Set up the layer of the map
+        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelo y paredes", 1)
+        self.cosas = arcade.tilemap.process_layer(my_map, "cosas", 1)
+        self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
+
 
         # Set up the lists
         self.player_list = arcade.SpriteList()
@@ -158,7 +167,7 @@ class Game(arcade.Window):
         # Set up the player
         self.player = MainCharacter(screen_width / 2, screen_height / 2, 3, 200)
         self.player_sprite = arcade.Sprite(
-            "protagonista.png",
+            "mapas/personajes/protagonista.png",
             sprite_scaling, center_x=self.player.pos_x, center_y=self.player.pos_y)
 
         self.player_list.append(self.player_sprite)
@@ -199,6 +208,11 @@ class Game(arcade.Window):
 
         # draw background
         # arcade.draw_lrwh_rectangle_textured(0, 0, screen_width, screen_height, self.background_image)
+
+        # draw of the map
+        self.suelo_paredes.draw()
+        self.cosas.draw()
+        self.obstaculos.draw()
 
         # draw all sprites
         self.player_list.draw()
