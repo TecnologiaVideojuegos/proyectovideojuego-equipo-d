@@ -125,6 +125,12 @@ class Consumable(Item):
         pass
 
 
+class Bullet(arcade.Sprite):
+    def update(self):
+        self.center_y += self.change_y
+        self.center_x += self.change_x
+
+
 class Game(arcade.Window):
     def __init__(self):
         super().__init__(screen_width, screen_height, screen_title)
@@ -135,6 +141,7 @@ class Game(arcade.Window):
 
         # main character
         self.player = None
+        self.bullet_shoot = None
 
         # character and bullet sprites
         self.player_sprite = None
@@ -159,7 +166,6 @@ class Game(arcade.Window):
         self.cosas = arcade.tilemap.process_layer(my_map, "cosas", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
 
-
         # Set up the lists
         self.player_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
@@ -171,8 +177,6 @@ class Game(arcade.Window):
             sprite_scaling, center_x=self.player.pos_x, center_y=self.player.pos_y)
 
         self.player_list.append(self.player_sprite)
-
-        self.bullet_list = arcade.SpriteList()
 
     def on_update(self, delta_time):
         """ Movement and game logic """  # collisions go here
@@ -197,8 +201,60 @@ class Game(arcade.Window):
         if self.player_sprite.center_y <= 0:
             self.player_sprite.center_y = 0
 
+        # make the bullet shoot
+        if self.bullet_shoot:
+            self.shoot()
+
         # update player position
         self.player_list.update()
+        self.bullet_list.update()
+
+    def shoot(self):
+
+        # Bullet creation
+        bullet = Bullet("bullet.png", 0.5)
+        bullet.center_x = self.player_sprite.center_x
+        bullet.center_y = self.player_sprite.center_y
+        self.bullet_list.append(bullet)
+        bullet.speed = 8
+
+        # Direction of the bullet
+        if self.player.right:
+            bullet.change_x = bullet.speed
+            bullet.change_y = 0
+            bullet.angle = 0
+        if self.player.down:
+            bullet.change_x = 0
+            bullet.change_y = -bullet.speed
+            bullet.angle = 270
+        if self.player.left:
+            bullet.change_x = -bullet.speed
+            bullet.change_y = 0
+            bullet.angle = 180
+        if self.player.up:
+            bullet.change_x = 0
+            bullet.change_y = bullet.speed
+            bullet.angle = 90
+        if self.player.down and self.player.left:
+            bullet.change_x = -bullet.speed/2
+            bullet.change_y = -bullet.speed/2
+            bullet.angle = 225
+        if self.player.down and self.player.right:
+            bullet.change_x = bullet.speed/2
+            bullet.change_y = -bullet.speed/2
+            bullet.angle = 315
+        if self.player.up and self.player.left:
+            bullet.change_x = -bullet.speed/2
+            bullet.change_y = bullet.speed/2
+            bullet.angle = 135
+        if self.player.up and self.player.right:
+            bullet.change_x = bullet.speed/2
+            bullet.change_y = bullet.speed/2
+            bullet.angle = 45
+        if not self.player.up and not self.player.down and not self.player.right and not self.player.left:
+            bullet.change_x = 0
+            bullet.change_y = bullet.speed
+            bullet.angle = 90
 
     def on_draw(self):
         """
@@ -230,6 +286,10 @@ class Game(arcade.Window):
         if key == arcade.key.D:
             self.player.right = True
 
+        # to shoot
+        if key == arcade.key.SPACE:
+            self.shoot()
+
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W:
             self.player.up = False
@@ -239,6 +299,7 @@ class Game(arcade.Window):
             self.player.down = False
         if key == arcade.key.D:
             self.player.right = False
+
 
 def main():
     game = Game()

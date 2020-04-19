@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="812fb6e8-e62d-45aa-867c-6845b02263d1" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MainClass.py" beforeDir="false" afterPath="$PROJECT_DIR$/MainClass.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/intento de videojuego.py" beforeDir="false" afterPath="$PROJECT_DIR$/intento de videojuego.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -34,6 +35,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\jorge\Documents\GitHub" />
       <recent name="C:\Users\jorge\Documents\GitHub\proyectovideojuego-equipo-d\mapas\archivos tsx" />
       <recent name="C:\Users\jorge\Documents\GitHub\proyectovideojuego-equipo-d" />
       <recent name="C:\Users\jorge\Documents\GitHub\proyectovideojuego-equipo-d\Classes" />
@@ -103,9 +105,31 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="prueba" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="proyectovideojuego-equipo-d" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/.." />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../prueba.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Python.intento de videojuego" />
+        <item itemvalue="Python.prueba" />
         <item itemvalue="Python.MainClass (1)" />
         <item itemvalue="Python.MainClass" />
       </list>
@@ -137,7 +161,14 @@
       <option name="project" value="LOCAL" />
       <updated>1586942043943</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Añadido primer mapa">
+      <created>1587061052851</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1587061052852</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -146,44 +177,53 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Commit con el primer mapa" />
     <MESSAGE value="Segundo Commit con el primer mapa" />
-    <option name="LAST_COMMIT_MESSAGE" value="Segundo Commit con el primer mapa" />
+    <MESSAGE value="Añadido primer mapa" />
+    <option name="LAST_COMMIT_MESSAGE" value="Añadido primer mapa" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="405" y="7" key="CommitChangelistDialog2" timestamp="1586942043133">
+    <state x="405" y="7" key="CommitChangelistDialog2" timestamp="1587061051317">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="405" y="7" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1586942043133" />
+    <state x="405" y="7" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1587061051317" />
     <state x="549" y="167" key="FileChooserDialogImpl" timestamp="1586881443095">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="549" y="167" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1586881443095" />
-    <state width="1515" height="210" key="GridCell.Tab.0.bottom" timestamp="1587060941800">
+    <state width="1515" height="210" key="GridCell.Tab.0.bottom" timestamp="1587323067147">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1515" height="210" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1587060941800" />
-    <state width="1515" height="210" key="GridCell.Tab.0.center" timestamp="1587060941799">
+    <state width="1515" height="210" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1587323067147" />
+    <state width="1515" height="210" key="GridCell.Tab.0.center" timestamp="1587323067147">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1515" height="210" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1587060941799" />
-    <state width="1515" height="210" key="GridCell.Tab.0.left" timestamp="1587060941797">
+    <state width="1515" height="210" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1587323067147" />
+    <state width="1515" height="210" key="GridCell.Tab.0.left" timestamp="1587323067147">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1515" height="210" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1587060941797" />
-    <state width="1515" height="210" key="GridCell.Tab.0.right" timestamp="1587060941799">
+    <state width="1515" height="210" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1587323067147" />
+    <state width="1515" height="210" key="GridCell.Tab.0.right" timestamp="1587323067147">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1515" height="210" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1587060941799" />
-    <state x="361" y="145" key="Vcs.Push.Dialog.v2" timestamp="1586942058849">
+    <state width="1515" height="210" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1587323067147" />
+    <state x="515" y="123" key="RollbackChangesDialog" timestamp="1587298362092">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="361" y="145" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1586942058849" />
-    <state x="465" y="236" key="com.intellij.ide.util.TipDialog" timestamp="1587060485950">
+    <state x="515" y="123" key="RollbackChangesDialog/0.0.1536.824@0.0.1536.824" timestamp="1587298362092" />
+    <state x="361" y="145" key="Vcs.Push.Dialog.v2" timestamp="1587061059947">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="465" y="236" key="com.intellij.ide.util.TipDialog/0.0.1536.824@0.0.1536.824" timestamp="1587060485950" />
+    <state x="361" y="145" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1587061059947" />
+    <state x="465" y="236" key="com.intellij.ide.util.TipDialog" timestamp="1587320303711">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="465" y="236" key="com.intellij.ide.util.TipDialog/0.0.1536.824@0.0.1536.824" timestamp="1587320303711" />
     <state x="578" y="329" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1586899238174">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="578" y="329" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1536.824@0.0.1536.824" timestamp="1586899238174" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1587295046927">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1587295046927" />
   </component>
 </project>
