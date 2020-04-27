@@ -161,6 +161,9 @@ class Game(arcade.Window):
         # main character and bullet sprites
         self.player_sprite = None
         self.bullet_sprite = None
+        
+        self.enemy = None
+        self.enemy_sprite = None
 
         # max number of enemies
         self.max_enemies = None
