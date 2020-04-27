@@ -221,12 +221,12 @@ class Game(arcade.Window):
     def room_2(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 2.tmx")
 
+        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelos y paredes", 1)
+        self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
         self.cuerpos = arcade.tilemap.process_layer(my_map, "cuerpos", 1)
         self.sangre = arcade.tilemap.process_layer(my_map, "sangre", 1)
-
-
 
     def room_3(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 3.tmx")
@@ -244,51 +244,39 @@ class Game(arcade.Window):
 
         if self.player_sprite.center_y > 630 and 326 < self.player_sprite.center_x < 376 and self.current_room == 0:
             self.current_room = 1
-
             self.room_1()
-
             self.player_sprite.center_y = 630
             self.player_sprite.center_x = 416
 
         if self.player_sprite.center_y > 635 and 298 < self.player_sprite.center_x < 343 and self.current_room == 1:
             self.current_room = 2
-
             self.room_2()
+            self.player_sprite.center_y = 20
+            self.player_sprite.center_x = 288
 
-            self.player_sprite.center_y = 630
-            self.player_sprite.center_x = 416
-
-        if self.player_sprite.center_y > 635 and 298 < self.player_sprite.center_x < 343 and self.current_room == 2:
+        if self.player_sprite.center_y > 635 and 256 < self.player_sprite.center_x < 320 and self.current_room == 2:
             self.current_room = 3
-
             self.room_3()
-
-            self.player_sprite.center_y = 630
-            self.player_sprite.center_x = 416
+            self.player_sprite.center_y = 20
+            self.player_sprite.center_x = 256
 
         # Going down stairs
-        if self.player_sprite.center_y > 635 and 389 < self.player_sprite.center_x < 438 and self.current_room == 3:
+        if self.player_sprite.center_y < 10 and 224 < self.player_sprite.center_x < 288 and self.current_room == 3:
             self.current_room = 2
-
             self.room_2()
-
             self.player_sprite.center_y = 630
-            self.player_sprite.center_x = 320
+            self.player_sprite.center_x = 288
 
-        if self.player_sprite.center_y > 635 and 389 < self.player_sprite.center_x < 438 and self.current_room == 2:
+        if self.player_sprite.center_y < 10 and 256 < self.player_sprite.center_x < 320 and self.current_room == 2:
             self.current_room = 1
-
             self.room_1()
-
             self.player_sprite.center_y = 630
             self.player_sprite.center_x = 320
 
         if self.player_sprite.center_y > 635 and 389 < self.player_sprite.center_x < 438 and self.current_room == 1:
             self.current_room = 0
-
             self.entrance()
-
-            self.player_sprite.center_y = 630
+            self.player_sprite.center_y = 625
             self.player_sprite.center_x = 352
 
         # main character movement
