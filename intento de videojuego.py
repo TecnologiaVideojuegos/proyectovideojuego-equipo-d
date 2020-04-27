@@ -324,9 +324,16 @@ class Game(arcade.Window):
         if self.player_sprite.center_y - 30 <= 0:
             self.player_sprite.center_y = 30
 
-        # make the bullet shoot
-        if self.bullet_shoot:
-            self.shoot()
+        # shooting
+        if self.cd % 60 == 0:
+            if self.player_sprite.shooting_right:
+                self.shoot("right")
+            elif self.player_sprite.shooting_left:
+                self.shoot("left")
+            elif self.player_sprite.shooting_up:
+                self.shoot("up")
+            elif self.player_sprite.shooting_down:
+                self.shoot("down")
 
         # List to make the enemy goes to the coordenates of the player
         for self.enemy_sprite in self.enemy_list:
@@ -336,53 +343,23 @@ class Game(arcade.Window):
         self.player_list.update()
         self.bullet_list.update()
 
-    def shoot(self):
+       def shoot(self, direction):
 
-        # Bullet creation
-        bullet = Bullet("bullet.png", 0.5)
+        # create bullet sprite
+        bullet = Bullet("bullet.png", sprite_scaling/10)
         bullet.center_x = self.player_sprite.center_x
         bullet.center_y = self.player_sprite.center_y
         self.bullet_list.append(bullet)
-        bullet.speed = 8
 
-        # Direction of the bullet
-        if self.player.right:
+        if direction == "right":
             bullet.change_x = bullet.speed
-            bullet.change_y = 0
-            bullet.angle = 0
-        if self.player.down:
-            bullet.change_x = 0
-            bullet.change_y = -bullet.speed
-            bullet.angle = 270
-        if self.player.left:
+        if direction == "left":
             bullet.change_x = -bullet.speed
-            bullet.change_y = 0
-            bullet.angle = 180
-        if self.player.up:
-            bullet.change_x = 0
+        if direction == "up":
             bullet.change_y = bullet.speed
-            bullet.angle = 90
-        if self.player.down and self.player.left:
-            bullet.change_x = -bullet.speed/2
-            bullet.change_y = -bullet.speed/2
-            bullet.angle = 225
-        if self.player.down and self.player.right:
-            bullet.change_x = bullet.speed/2
-            bullet.change_y = -bullet.speed/2
-            bullet.angle = 315
-        if self.player.up and self.player.left:
-            bullet.change_x = -bullet.speed/2
-            bullet.change_y = bullet.speed/2
-            bullet.angle = 135
-        if self.player.up and self.player.right:
-            bullet.change_x = bullet.speed/2
-            bullet.change_y = bullet.speed/2
-            bullet.angle = 45
-        if not self.player.up and not self.player.down and not self.player.right and not self.player.left:
-            bullet.change_x = 0
-            bullet.change_y = bullet.speed
-            bullet.angle = 90
-
+        if direction == "down":
+            bullet.change_y = -bullet.speed
+            
     def movimiento(self, enemy, player):
 
         # Movement
@@ -443,27 +420,50 @@ class Game(arcade.Window):
 
         # move character
         if key == arcade.key.W:
-            self.player.up = True
+            self.player_sprite.go_up = True
         if key == arcade.key.A:
-            self.player.left = True
+            self.player_sprite.go_left = True
         if key == arcade.key.S:
-            self.player.down = True
+            self.player_sprite.go_down = True
         if key == arcade.key.D:
-            self.player.right = True
+            self.player_sprite.go_right = True
 
-        # to shoot
-        if key == arcade.key.SPACE:
-            self.shoot()
+         # player shooting
+        if key == arcade.key.RIGHT and (not self.player_sprite.shooting_left and not self.player_sprite.shooting_up and not self.player_sprite.shooting_down):
+            self.shoot("right")
+            self.player_sprite.shooting_right = True
+            self.cd = 0
+        if key == arcade.key.LEFT and (not self.player_sprite.shooting_right and not self.player_sprite.shooting_up and not self.player_sprite.shooting_down):
+            self.shoot("left")
+            self.player_sprite.shooting_left = True
+            self.cd = 0
+        if key == arcade.key.UP and (not self.player_sprite.shooting_right and not self.player_sprite.shooting_left and not self.player_sprite.shooting_down):
+            self.shoot("up")
+            self.player_sprite.shooting_up = True
+            self.cd = 0
+        if key == arcade.key.DOWN and (not self.player_sprite.shooting_right and not self.player_sprite.shooting_up and not self.player_sprite.shooting_left):
+            self.shoot("down")
+            self.player_sprite.shooting_down = True
+            self.cd = 0
 
-    def on_key_release(self, key, modifiers):
+        def on_key_release(self, key, modifiers):
         if key == arcade.key.W:
-            self.player.up = False
+            self.player_sprite.go_up = False
         if key == arcade.key.A:
-            self.player.left = False
+            self.player_sprite.go_left = False
         if key == arcade.key.S:
-            self.player.down = False
+            self.player_sprite.go_down = False
         if key == arcade.key.D:
-            self.player.right = False
+            self.player_sprite.go_right = False
+
+        if key == arcade.key.RIGHT:
+            self.player_sprite.shooting_right = False
+        if key == arcade.key.LEFT:
+            self.player_sprite.shooting_left = False
+        if key == arcade.key.UP:
+            self.player_sprite.shooting_up = False
+        if key == arcade.key.DOWN:
+            self.player_sprite.shooting_down = False
 
 
 def main():
