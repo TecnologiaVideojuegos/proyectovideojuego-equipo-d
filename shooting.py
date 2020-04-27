@@ -41,7 +41,7 @@ if self.cd % 60 == 0:
 def shoot(self, dir1):
 
     # create bullet sprite
-    bullet = Bullet("C:/Users/Usuario/Desktop/Pitón/Sprites/bullet.png", sprite_scaling/10)
+    bullet = Bullet("bullet.png", sprite_scaling/10)
     bullet.center_x = self.player_sprite.center_x
     bullet.center_y = self.player_sprite.center_y
     self.bullet_list.append(bullet)
