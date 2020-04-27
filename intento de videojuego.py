@@ -7,11 +7,11 @@ screen_title = "Journey of the Prairie King"
 sprite_scaling = 1
 
 
-class Character:
-    def __init__(self, pos_x, pos_y, number_of_hearts, speed):
+class Character(arcade.Sprite):
+    def __init__(self, filename, scale, number_of_hearts, speed):
 
-        self.pos_x = pos_x
-        self.pos_y = pos_y
+        super().__init__(filename, scale)
+
         self.speed = speed
         self.number_of_hearts = number_of_hearts
         self.dead = False
@@ -23,7 +23,7 @@ class Character:
         """
         return self.number_of_hearts
 
-    def sub_heart(self, number_of_hearts):  # los hits que aguantan los enemigos son como sus "vidas"
+    def sub_heart(self):  # los hits que aguantan los enemigos son como sus "vidas"
         """
         Quita un corazon del total de corazones
         Int -> None
@@ -33,17 +33,24 @@ class Character:
             self.dead = True
 
 
+
 class MainCharacter(Character):
-    def __init__(self, pos_x, pos_y, number_of_hearts, speed):  # muere de un golpe
+    def __init__(self, filename, scale, number_of_hearts, speed):  # muere de un golpe
 
-        super().__init__(pos_x, pos_y, number_of_hearts, speed)
+        super().__init__(filename, scale, number_of_hearts, speed)
 
+        self.center_x = screen_width / 2
+        self.center_y = screen_height / 2
         self.money = 0
         self.weapon = Weapon  # not sure how to do this
-        self.right = False
-        self.left = False
-        self.up = False
-        self.down = False
+        self.go_right = False
+        self.go_left = False
+        self.go_up = False
+        self.go_down = False
+        self.shooting_right = None
+        self.shooting_left = None
+        self.shooting_up = None
+        self.shooting_down = None
 
     def get_money(self):
         """
@@ -63,7 +70,7 @@ class MainCharacter(Character):
         """
         self.speed = new_speed
 
-    def add_heart(self, number_of_hearts):
+    def add_heart(self):
         """
         Suma un corazon al total de corazones
         Int -> None
@@ -72,10 +79,11 @@ class MainCharacter(Character):
 
 
 class Enemy(Character):
-    def __init__(self, pos_x, pos_y, number_of_hearts, speed):
+    def __init__(self, filename, scale, pos_x, pos_y, number_of_hearts, speed):
 
-        super().__init__(pos_x, pos_y, number_of_hearts, speed)
-
+        super().__init__(filename, scale, number_of_hearts, speed)
+        self.center_x = pos_x
+        self.center_y = pos_y
         self.drop_list = []  # items, todavía por definir, lista de objetos (clase)
 
     def drop(self):
@@ -126,13 +134,23 @@ class Consumable(Item):
 
 
 class Bullet(arcade.Sprite):
+
+    def __init__(self, filename, sprite_scale):
+
+        super().__init__(filename, sprite_scale)
+        self.speed = 5
+
     def update(self):
-        self.center_y += self.change_y
+
         self.center_x += self.change_x
+        self.center_y += self.change_y
 
 
 class Game(arcade.Window):
     def __init__(self):
+        super().__init__(screen_width, screen_height, screen_title)
+
+            def __init__(self):
         super().__init__(screen_width, screen_height, screen_title)
 
         # lists
@@ -140,15 +158,18 @@ class Game(arcade.Window):
         self.bullet_list = None
         self.enemy_list = None
 
-        # main character, bullet and enemy
-        self.player = None
-        self.bullet_shoot = None
-        self.enemy = None
-
-        # character, bullet and enemy sprites
+        # main character and bullet sprites
         self.player_sprite = None
         self.bullet_sprite = None
-        self.enemy_sprite = None
+
+        # max number of enemies
+        self.max_enemies = None
+
+        # background
+        self.background_image = None
+
+        self.cd = None
+        self.score = None
 
         # map sprites
         self.suelo_paredes = None
@@ -194,12 +215,13 @@ class Game(arcade.Window):
         self.enemy_list.append(self.enemy_sprite)
 
         # Set up the player
-        self.player = MainCharacter(screen_width / 2, screen_height / 2, 3, 200)
-        self.player_sprite = arcade.Sprite(
-            "mapas/personajes/protagonista.png",
-            sprite_scaling, center_x=self.player.pos_x, center_y=self.player.pos_y)
-
+        self.player_sprite = MainCharacter("protagonista.png", sprite_scaling,
+            3, 200)
         self.player_list.append(self.player_sprite)
+        
+        self.max_enemies = 10
+        self.cd = 0
+        self.score = 0
 
 # Rooms created
     def entrance(self):
@@ -290,14 +312,14 @@ class Game(arcade.Window):
             self.player_sprite.center_y -= self.player.speed * delta_time
 
         # collisions with screen borders (not finished)
-        if self.player_sprite.center_x + 27 >= screen_width:
-            self.player_sprite.center_x = screen_width - 27
-        if self.player_sprite.center_x <= 0:
-            self.player_sprite.center_x = 0
-        if self.player_sprite.center_y >= screen_height:
-            self.player_sprite.center_y = screen_height
-        if self.player_sprite.center_y <= 0:
-            self.player_sprite.center_y = 0
+        if self.player_sprite.center_x + 20 >= screen_width:
+            self.player_sprite.center_x = screen_width - 20
+        if self.player_sprite.center_x - 20 <= 0:
+            self.player_sprite.center_x = 20
+        if self.player_sprite.center_y + 32 >= screen_height:
+            self.player_sprite.center_y = screen_height - 32
+        if self.player_sprite.center_y - 30 <= 0:
+            self.player_sprite.center_y = 30
 
         # make the bullet shoot
         if self.bullet_shoot:
