@@ -151,7 +151,8 @@ class Game(arcade.Window):
         self.enemy_sprite = None
 
         # map sprites
-        self.suelo_paredes = None
+        self.paredes = None
+        self.suelo = None
         self.cosas = None
         self.obstaculos = None
         self.obstaculos_2 = None
@@ -197,7 +198,8 @@ class Game(arcade.Window):
     def entrance(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/entrada.tmx")
 
-        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelo y paredes", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.cosas = arcade.tilemap.process_layer(my_map, "cosas", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
 
@@ -230,7 +232,8 @@ class Game(arcade.Window):
 
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 1.tmx")
 
-        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelo y paredes", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos 2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
@@ -238,7 +241,8 @@ class Game(arcade.Window):
     def room_2(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 2.tmx")
 
-        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelos y paredes", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
@@ -248,7 +252,8 @@ class Game(arcade.Window):
     def room_3(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 3.tmx")
 
-        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelo y paredes", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.sangre = arcade.tilemap.process_layer(my_map, "sangre", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.cuerpos = arcade.tilemap.process_layer(my_map, "cuerpos", 1)
@@ -415,20 +420,23 @@ class Game(arcade.Window):
         # draw of the map
         # Room entrance
         if self.current_room == 0:
-            self.suelo_paredes.draw()
+            self.paredes.draw()
+            self.suelo.draw()
             self.cosas.draw()
             self.obstaculos.draw()
 
         # Room 1
         if self.current_room == 1:
-            self.suelo_paredes.draw()
+            self.paredes.draw()
+            self.suelo.draw()
             self.obstaculos.draw()
             self.obstaculos_2.draw()
             self.perfeccionar.draw()
 
         # Room 2
         if self.current_room == 2:
-            self.suelo_paredes.draw()
+            self.paredes.draw()
+            self.suelo.draw()
             self.obstaculos.draw()
             self.obstaculos_2.draw()
             self.perfeccionar.draw()
@@ -437,7 +445,8 @@ class Game(arcade.Window):
 
         # Room 3
         if self.current_room == 3:
-            self.suelo_paredes.draw()
+            self.paredes.draw()
+            self.suelo.draw()
             self.obstaculos.draw()
             self.sangre.draw()
             self.cuerpos.draw()
