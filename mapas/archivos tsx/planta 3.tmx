@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.2" tiledversion="1.3.3" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="1">
- <tileset firstgid="1" source="../tile set/paredes.tsx"/>
- <tileset firstgid="129" source="../tile set/suelos y paredes.tsx"/>
- <tileset firstgid="369" source="../tile set/ee15d1f08a44de8d3715a4e7c5f2a5df.tsx"/>
- <tileset firstgid="469" source="../tile set/shop-and-hospital1.tsx"/>
- <tileset firstgid="725" source="../tile set/cuerpos y sangre.tsx"/>
- <tileset firstgid="950" source="../tile set/sangre.tsx"/>
+ <tileset firstgid="1" source="paredes.tsx"/>
+ <tileset firstgid="129" source="suelos y paredes.tsx"/>
+ <tileset firstgid="369" source="ee15d1f08a44de8d3715a4e7c5f2a5df.tsx"/>
+ <tileset firstgid="469" source="shop-and-hospital1.tsx"/>
+ <tileset firstgid="725" source="cuerpos y sangre.tsx"/>
+ <tileset firstgid="950" source="sangre.tsx"/>
  <layer id="1" name="suelo" width="20" height="20">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,216,0,0,0,0,0,0,2147484033,385,0,0,
