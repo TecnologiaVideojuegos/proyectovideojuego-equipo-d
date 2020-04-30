@@ -170,6 +170,7 @@ class Game(arcade.Window):
         self.perfeccionar = None
         self.cuerpos = None
         self.sangre = None
+        self.physics_paredes = None
 
         # number of the room the player is
         self.current_room = 0
@@ -188,6 +189,7 @@ class Game(arcade.Window):
         self.bullet_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
         self.powerUpList = arcade.SpriteList()
+        self.physics_paredes = arcade.SpriteList()
 
         # Set up the player
         self.player_sprite = MainCharacter(
@@ -215,6 +217,8 @@ class Game(arcade.Window):
         self.cosas = arcade.tilemap.process_layer(my_map, "cosas", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
 
+        self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
+
     def room_1(self):
 
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 1.tmx")
@@ -225,25 +229,31 @@ class Game(arcade.Window):
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
 
+        self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
+
     def room_2(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 2.tmx")
 
         self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
-        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo", 1)
         self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
         self.cuerpos = arcade.tilemap.process_layer(my_map, "cuerpos", 1)
         self.sangre = arcade.tilemap.process_layer(my_map, "sangre", 1)
 
+        self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
+
     def room_3(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 3.tmx")
 
         self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
-        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo", 1)
         self.sangre = arcade.tilemap.process_layer(my_map, "sangre", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.cuerpos = arcade.tilemap.process_layer(my_map, "cuerpos", 1)
+
+        self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
 
     def create_enemies(self, max_number):
 
@@ -317,7 +327,7 @@ class Game(arcade.Window):
             self.player_sprite.center_y = 620
             self.player_sprite.center_x = 320
 
-        if self.player_sprite.center_y > 635 and 389 < self.player_sprite.center_x < 438 and self.current_room == 1:
+        if self.player_sprite.center_y > 650 and 389 < self.player_sprite.center_x < 438 and self.current_room == 1:
             self.current_room = 0
             self.entrance()
             self.player_sprite.center_y = 620
@@ -333,7 +343,8 @@ class Game(arcade.Window):
         if self.player_sprite.go_down:
             self.player_sprite.center_y -= self.player_sprite.speed * delta_time
 
-        # collisions with screen borders
+        # Nos puede servir para hacer que el personaje no pase hasta que se haya acabado la ronda
+        """# collisions with screen borders
         if self.player_sprite.center_x + 20 >= screen_width:
             self.player_sprite.center_x = screen_width - 20
         if self.player_sprite.center_x - 20 <= 0:
@@ -341,7 +352,7 @@ class Game(arcade.Window):
         if self.player_sprite.center_y + 32 >= screen_height:
             self.player_sprite.center_y = screen_height - 32
         if self.player_sprite.center_y - 30 <= 0:
-            self.player_sprite.center_y = 30
+            self.player_sprite.center_y = 30"""
 
         # shooting
         if self.cd % 30 == 0:
@@ -376,6 +387,7 @@ class Game(arcade.Window):
         self.player_list.update()
         self.bullet_list.update()
         self.enemy_list.update()
+        self.physics_paredes.update()
 
     def shoot(self, direction):
 
