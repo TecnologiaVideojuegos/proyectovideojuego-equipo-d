@@ -7,10 +7,11 @@ screen_title = "Journey of the Prairie King"
 sprite_scaling = 1
 
 
-class Character:
-    def __init__(self, pos_x, pos_y, number_of_hearts, speed):
-        self.pos_x = pos_x
-        self.pos_y = pos_y
+class Character(arcade.Sprite):
+    def __init__(self, filename, scale, number_of_hearts, speed):
+
+        super().__init__(filename, scale)
+
         self.speed = speed
         self.number_of_hearts = number_of_hearts
         self.dead = False
@@ -22,7 +23,7 @@ class Character:
         """
         return self.number_of_hearts
 
-    def sub_heart(self, number_of_hearts):  # los hits que aguantan los enemigos son como sus "vidas"
+    def sub_heart(self):  # los hits que aguantan los enemigos son como sus "vidas"
         """
         Quita un corazon del total de corazones
         Int -> None
@@ -33,16 +34,21 @@ class Character:
 
 
 class MainCharacter(Character):
-    def __init__(self, pos_x, pos_y, number_of_hearts, speed):  # muere de un golpe
+    def __init__(self, filename, scale, number_of_hearts, speed):  # muere de un golpe
 
-        super().__init__(pos_x, pos_y, number_of_hearts, speed)
+        super().__init__(filename, scale, number_of_hearts, speed)
 
+        self.center_x = screen_width / 2
+        self.center_y = screen_height / 2
         self.money = 0
-        self.weapon = Weapon  # not sure how to do this
-        self.right = False
-        self.left = False
-        self.up = False
-        self.down = False
+        self.go_right = False
+        self.go_left = False
+        self.go_up = False
+        self.go_down = False
+        self.shooting_right = None
+        self.shooting_left = None
+        self.shooting_up = None
+        self.shooting_down = None
 
     def get_money(self):
         """
@@ -62,7 +68,7 @@ class MainCharacter(Character):
         """
         self.speed = new_speed
 
-    def add_heart(self, number_of_hearts):
+    def add_heart(self):
         """
         Suma un corazon al total de corazones
         Int -> None
@@ -71,18 +77,18 @@ class MainCharacter(Character):
 
 
 class Enemy(Character):
-    def __init__(self, pos_x, pos_y, number_of_hearts, speed):
-        super().__init__(pos_x, pos_y, number_of_hearts, speed)
+    def __init__(self, filename, scale, pos_x, pos_y, number_of_hearts, speed):
 
-        self.drop_list = ["","",""]  # items, todavía por definir, lista de objetos (clase)
+        super().__init__(filename, scale, number_of_hearts, speed)
+        self.center_x = pos_x
+        self.center_y = pos_y
+        self.drop_list = []  # items, todavía por definir, lista de objetos (clase)
 
     def drop(self):
-
         """
         Elige un item al azar del drop list y lo retorna
         None -> String
         """
-
         return self.drop_list[randint(0, len(self.drop_list) - 1)]  # no tengo en cuenta droprate
 
 
@@ -111,6 +117,7 @@ class Weapon(Item):
         Aplica powerUp a arma
         String -> None
         """
+        pass
 
 
 class Consumable(Item):
@@ -126,9 +133,15 @@ class Consumable(Item):
 
 
 class Bullet(arcade.Sprite):
+
+    def __init__(self, filename, sprite_scale):
+        super().__init__(filename, sprite_scale)
+        self.speed = 5
+
     def update(self):
-        self.center_y += self.change_y
+
         self.center_x += self.change_x
+        self.center_y += self.change_y
 
 
 class Game(arcade.Window):
@@ -139,19 +152,18 @@ class Game(arcade.Window):
         self.player_list = None
         self.bullet_list = None
         self.enemy_list = None
+        self.powerUpList = None
 
-        # main character, bullet and enemy
-        self.player = None
-        self.bullet_shoot = None
-        self.enemy = None
-
-        # character, bullet and enemy sprites
+        # main character and bullet sprites
         self.player_sprite = None
         self.bullet_sprite = None
-        self.enemy_sprite = None
+
+        # max number of enemies
+        self.max_enemies = None
 
         # map sprites
-        self.suelo_paredes = None
+        self.paredes = None
+        self.suelo = None
         self.cosas = None
         self.obstaculos = None
         self.obstaculos_2 = None
@@ -162,75 +174,53 @@ class Game(arcade.Window):
         # number of the room the player is
         self.current_room = 0
 
-        # physics between enemies
-        self.physics_engine_enemy = None
-        self.physics_engine_enemy1 = None
-        self.physics_engine_enemy2 = None
-
-        # collision bullet - enemy
-        self.collision_bullet_enemy = None
+        self.cd = None
+        self.score = None
+        self.spawn_cd = None
 
     def setup(self):
         """
         Set up the game and initialize the variables. Call this function to restart the game
         """
+
         # Set up the lists
         self.player_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
-        self.physics_engine_enemy = arcade.SpriteList()
-        self.physics_engine_enemy1 = arcade.SpriteList()
-        self.physics_engine_enemy2 = arcade.SpriteList()
+        self.powerUpList = arcade.SpriteList()
+
+        # Set up the player
+        self.player_sprite = MainCharacter(
+            "mapas/personajes/protagonista.png", sprite_scaling,
+            3, 200)
+        self.player_list.append(self.player_sprite)
 
         # The entrances is the first room
         self.entrance()
 
-        # Set up the player
-        self.player = MainCharacter(screen_width / 2, 305, 3, 360)
-        self.player_sprite = arcade.Sprite(
-            "mapas/personajes/protagonista.png",
-            sprite_scaling, center_x=self.player.pos_x, center_y=self.player.pos_y)
+        # Set up the max number of enemies
+        self.max_enemies = 10
 
-        self.player_list.append(self.player_sprite)
+        self.cd = 0
+        self.score = 0
+        # tiempo de reaparicion de enemigos
+        self.spawn_cd = 0
 
     # Rooms created
     def entrance(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/entrada.tmx")
 
-        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelo y paredes", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.cosas = arcade.tilemap.process_layer(my_map, "cosas", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
-
-        # Enemies
-        # Enemies 2
-        self.enemy = Enemy(640, 305, 2, 3)
-        self.enemy_sprite = arcade.Sprite("mapas/personajes/enemigo 2.png", 1, center_x=self.enemy.pos_x, center_y=self.enemy.pos_y)
-        self.enemy_sprite.speed = self.enemy.speed
-        self.enemy_sprite.number_of_hearts = self.enemy.number_of_hearts
-        self.enemy_list.append(self.enemy_sprite)
-        self.physics_engine_enemy=(arcade.PhysicsEngineSimple(self.enemy_sprite, self.enemy_list))
-
-        # Enemies 3
-        self.enemy = Enemy(0, 500, 4, 1)
-        self.enemy_sprite = arcade.Sprite("mapas/personajes/enemigo 3.png", 1, center_x=self.enemy.pos_x, center_y=self.enemy.pos_y)
-        self.enemy_sprite.speed = self.enemy.speed
-        self.enemy_sprite.number_of_hearts = self.enemy.number_of_hearts
-        self.enemy_list.append(self.enemy_sprite)
-        self.physics_engine_enemy1 =(arcade.PhysicsEngineSimple(self.enemy_sprite, self.enemy_list))
-
-        # Enemies 1
-        self.enemy = Enemy(0, 305, 2, 2)
-        self.enemy_sprite = arcade.Sprite("mapas/personajes/enemigo 1.png", 1, center_x=self.enemy.pos_x, center_y=self.enemy.pos_y)
-        self.enemy_sprite.speed = self.enemy.speed
-        self.enemy_sprite.number_of_hearts = self.enemy.number_of_hearts
-        self.enemy_list.append(self.enemy_sprite)
-        self.physics_engine_enemy2 = (arcade.PhysicsEngineSimple(self.enemy_sprite, self.enemy_list))
 
     def room_1(self):
 
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 1.tmx")
 
-        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelo y paredes", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos 2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
@@ -238,7 +228,8 @@ class Game(arcade.Window):
     def room_2(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 2.tmx")
 
-        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelos y paredes", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
@@ -248,16 +239,52 @@ class Game(arcade.Window):
     def room_3(self):
         my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 3.tmx")
 
-        self.suelo_paredes = arcade.tilemap.process_layer(my_map, "suelo y paredes", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.sangre = arcade.tilemap.process_layer(my_map, "sangre", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.cuerpos = arcade.tilemap.process_layer(my_map, "cuerpos", 1)
 
+    def create_enemies(self, max_number):
+
+        if len(self.enemy_list) < max_number:
+            random_number = randint(1, 3)
+            for enemy in range(random_number):
+                pos_x = 0
+                pos_y = 0
+                place_choice = randint(0, 3)
+                foe_choice = randint(0, 2)
+
+                if place_choice == 0:
+                    pos_x = randint(240, 340)
+                    pos_y = randint(20, 21)
+                elif place_choice == 1:
+                    pos_x = randint(240, 340)
+                    pos_y = randint(600, screen_height - 20)
+                elif place_choice == 2:
+                    pos_x = randint(20, 21)
+                    pos_y = randint(240, 340)
+                elif place_choice == 3:
+                    pos_x = randint(600, screen_width - 20)
+                    pos_y = randint(240, 340)
+
+                if foe_choice == 0:
+                    enemy = Enemy("mapas/personajes/enemigo 1.png",
+                              1.5, pos_x, pos_y, 1, 10)
+                elif foe_choice == 1:
+                    enemy = Enemy("mapas/personajes/enemigo 2.png",
+                              1.5, pos_x, pos_y, 2, 10)
+                elif foe_choice == 2:
+                    enemy = Enemy("mapas/personajes/enemigo 3.png",
+                              1.5, pos_x, pos_y, 3, 10)
+
+                self.enemy_list.append(enemy)
+
     def on_update(self, delta_time):
         """ Movement and game logic """  # collisions go here
 
-        # Update of the room where the player is
-        # Going up stairs
+        self.cd += 2
+        self.spawn_cd += 1
 
         if self.player_sprite.center_y > 630 and 326 < self.player_sprite.center_x < 376 and self.current_room == 0:
             self.current_room = 1
@@ -297,99 +324,75 @@ class Game(arcade.Window):
             self.player_sprite.center_x = 352
 
         # main character movement
-        if self.player.right:
-            self.player_sprite.center_x += self.player.speed * delta_time
-        if self.player.left:
-            self.player_sprite.center_x -= self.player.speed * delta_time
-        if self.player.up:
-            self.player_sprite.center_y += self.player.speed * delta_time
-        if self.player.down:
-            self.player_sprite.center_y -= self.player.speed * delta_time
+        if self.player_sprite.go_right:
+            self.player_sprite.center_x += self.player_sprite.speed * delta_time
+        if self.player_sprite.go_left:
+            self.player_sprite.center_x -= self.player_sprite.speed * delta_time
+        if self.player_sprite.go_up:
+            self.player_sprite.center_y += self.player_sprite.speed * delta_time
+        if self.player_sprite.go_down:
+            self.player_sprite.center_y -= self.player_sprite.speed * delta_time
 
-        # collisions with screen borders (not finished)
-        if self.player_sprite.center_x + 27 >= screen_width:
-            self.player_sprite.center_x = screen_width - 27
-        if self.player_sprite.center_x <= 0:
-            self.player_sprite.center_x = 0
-        if self.player_sprite.center_y >= screen_height:
-            self.player_sprite.center_y = screen_height
-        if self.player_sprite.center_y <= 0:
-            self.player_sprite.center_y = 0
+        # collisions with screen borders
+        if self.player_sprite.center_x + 20 >= screen_width:
+            self.player_sprite.center_x = screen_width - 20
+        if self.player_sprite.center_x - 20 <= 0:
+            self.player_sprite.center_x = 20
+        if self.player_sprite.center_y + 32 >= screen_height:
+            self.player_sprite.center_y = screen_height - 32
+        if self.player_sprite.center_y - 30 <= 0:
+            self.player_sprite.center_y = 30
 
-        # make the bullet shoot
-        if self.bullet_shoot:
-            self.shoot()
+        # shooting
+        if self.cd % 30 == 0:
+            if self.player_sprite.shooting_right:
+                self.shoot("right")
+            elif self.player_sprite.shooting_left:
+                self.shoot("left")
+            elif self.player_sprite.shooting_up:
+                self.shoot("up")
+            elif self.player_sprite.shooting_down:
+                self.shoot("down")
 
-        # collision of the bullet with enemy
-        for self.bullet_sprite in self.bullet_list:
-            collision_bullet_enemy = arcade.check_for_collision_with_list(self.bullet_sprite, self.enemy_list)
-            if len(collision_bullet_enemy) > 0:
-                self.bullet_sprite.remove_from_sprite_lists()
-
+        # collisions bullet - enemy
+        for bullet in self.bullet_list:
+            collision_bullet_enemy = arcade.check_for_collision_with_list(bullet, self.enemy_list)
             # enemy actualization of hearts
-            for self.enemy_sprite in collision_bullet_enemy:
-                if self.enemy_sprite.number_of_hearts > 0:
-                    self.enemy_sprite.number_of_hearts -= 1
-                if self.enemy_sprite.number_of_hearts == 0:
-                    self.enemy_sprite.remove_from_sprite_lists()
+            for enemy in collision_bullet_enemy:
+                bullet.remove_from_sprite_lists()
+                if enemy.number_of_hearts > 0:
+                    enemy.number_of_hearts -= 1
+                if enemy.number_of_hearts == 0:
+                    enemy.remove_from_sprite_lists()
+                    self.score += 1
 
-        # List to make the enemy goes to the coordenates of the player
-        for self.enemy_sprite in self.enemy_list:
-            self.movimiento(self.enemy_sprite, self.player_sprite)
+        for enemy in self.enemy_list:
+            self.movimiento(enemy, self.player_sprite)
 
-        # update player position
-        self.physics_engine_enemy.update()
-        self.physics_engine_enemy1.update()
-        self.physics_engine_enemy2.update()
+        if self.spawn_cd % 150 == 0:
+            self.create_enemies(self.max_enemies)
+
+        # update everything
         self.player_list.update()
         self.bullet_list.update()
+        self.enemy_list.update()
 
-    def shoot(self):
+    def shoot(self, direction):
 
-        # Bullet creation
-        bullet = Bullet("bullet.png", 0.5)
+        # create bullet sprite
+        bullet = Bullet("bullet.png", sprite_scaling/10)
         bullet.center_x = self.player_sprite.center_x
         bullet.center_y = self.player_sprite.center_y
         self.bullet_list.append(bullet)
-        bullet.speed = 8
 
-        # Direction of the bullet
-        if self.player.right:
+        if direction == "right":
             bullet.change_x = bullet.speed
-            bullet.change_y = 0
-            bullet.angle = 0
-        if self.player.down:
-            bullet.change_x = 0
-            bullet.change_y = -bullet.speed
-            bullet.angle = 270
-        if self.player.left:
+        if direction == "left":
             bullet.change_x = -bullet.speed
-            bullet.change_y = 0
-            bullet.angle = 180
-        if self.player.up:
-            bullet.change_x = 0
+        if direction == "up":
             bullet.change_y = bullet.speed
-            bullet.angle = 90
-        if self.player.down and self.player.left:
-            bullet.change_x = -bullet.speed / 2
-            bullet.change_y = -bullet.speed / 2
-            bullet.angle = 225
-        if self.player.down and self.player.right:
-            bullet.change_x = bullet.speed / 2
-            bullet.change_y = -bullet.speed / 2
-            bullet.angle = 315
-        if self.player.up and self.player.left:
-            bullet.change_x = -bullet.speed / 2
-            bullet.change_y = bullet.speed / 2
-            bullet.angle = 135
-        if self.player.up and self.player.right:
-            bullet.change_x = bullet.speed / 2
-            bullet.change_y = bullet.speed / 2
-            bullet.angle = 45
-        if not self.player.up and not self.player.down and not self.player.right and not self.player.left:
-            bullet.change_x = 0
-            bullet.change_y = bullet.speed
-            bullet.angle = 90
+        if direction == "down":
+            bullet.change_y = -bullet.speed
 
     def movimiento(self, enemy, player):
 
@@ -415,20 +418,23 @@ class Game(arcade.Window):
         # draw of the map
         # Room entrance
         if self.current_room == 0:
-            self.suelo_paredes.draw()
+            self.paredes.draw()
+            self.suelo.draw()
             self.cosas.draw()
             self.obstaculos.draw()
 
         # Room 1
         if self.current_room == 1:
-            self.suelo_paredes.draw()
+            self.paredes.draw()
+            self.suelo.draw()
             self.obstaculos.draw()
             self.obstaculos_2.draw()
             self.perfeccionar.draw()
 
         # Room 2
         if self.current_room == 2:
-            self.suelo_paredes.draw()
+            self.paredes.draw()
+            self.suelo.draw()
             self.obstaculos.draw()
             self.obstaculos_2.draw()
             self.perfeccionar.draw()
@@ -437,10 +443,13 @@ class Game(arcade.Window):
 
         # Room 3
         if self.current_room == 3:
-            self.suelo_paredes.draw()
+            self.paredes.draw()
+            self.suelo.draw()
             self.obstaculos.draw()
             self.sangre.draw()
             self.cuerpos.draw()
+
+        arcade.draw_text(f"Score: {self.score}", 550, 600, arcade.color.WHITE, 15)
 
         # draw all sprites
         self.player_list.draw()
@@ -451,27 +460,52 @@ class Game(arcade.Window):
 
         # move character
         if key == arcade.key.W:
-            self.player.up = True
+            self.player_sprite.go_up = True
         if key == arcade.key.A:
-            self.player.left = True
+            self.player_sprite.go_left = True
         if key == arcade.key.S:
-            self.player.down = True
+            self.player_sprite.go_down = True
         if key == arcade.key.D:
-            self.player.right = True
+            self.player_sprite.go_right = True
 
-        # to shoot
-        if key == arcade.key.SPACE:
-            self.shoot()
+        # player shooting
+        if key == arcade.key.RIGHT and (not self.player_sprite.shooting_left and not self.player_sprite.shooting_up and not self.player_sprite.shooting_down):
+            self.shoot("right")
+            self.player_sprite.shooting_right = True
+            self.cd = 0
+        if key == arcade.key.LEFT and (not self.player_sprite.shooting_right and not self.player_sprite.shooting_up and not self.player_sprite.shooting_down):
+            self.shoot("left")
+            self.player_sprite.shooting_left = True
+            self.cd = 0
+        if key == arcade.key.UP and (not self.player_sprite.shooting_right and not self.player_sprite.shooting_left and not self.player_sprite.shooting_down):
+            self.shoot("up")
+            self.player_sprite.shooting_up = True
+            self.cd = 0
+        if key == arcade.key.DOWN and (not self.player_sprite.shooting_right and not self.player_sprite.shooting_up and not self.player_sprite.shooting_left):
+            self.shoot("down")
+            self.player_sprite.shooting_down = True
+            self.cd = 0
+
+        # hacer algo del rollo if key == arcade.key.RIGHT and self.shooting_up, que vaya en diagonal
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W:
-            self.player.up = False
+            self.player_sprite.go_up = False
         if key == arcade.key.A:
-            self.player.left = False
+            self.player_sprite.go_left = False
         if key == arcade.key.S:
-            self.player.down = False
+            self.player_sprite.go_down = False
         if key == arcade.key.D:
-            self.player.right = False
+            self.player_sprite.go_right = False
+
+        if key == arcade.key.RIGHT:
+            self.player_sprite.shooting_right = False
+        if key == arcade.key.LEFT:
+            self.player_sprite.shooting_left = False
+        if key == arcade.key.UP:
+            self.player_sprite.shooting_up = False
+        if key == arcade.key.DOWN:
+            self.player_sprite.shooting_down = False
 
 
 def main():
@@ -480,4 +514,5 @@ def main():
     arcade.run()
 
 
-main()
+if __name__ == "__main__":
+    main()
