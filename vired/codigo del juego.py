@@ -195,9 +195,6 @@ class Game(arcade.Window):
         self.score = None
         self.spawn_cd = None
 
-        self.physics_enemy = None
-        self.list_physics_enemy = None
-
     def setup(self):
         """
         Set up the game and initialize the variables. Call this function to restart the game
@@ -209,8 +206,6 @@ class Game(arcade.Window):
         self.enemy_list = arcade.SpriteList()
         self.powerUpList = arcade.SpriteList()
         self.physics_paredes = arcade.SpriteList()
-        self.physics_enemy = arcade.SpriteList()
-        self.list_physics_enemy = arcade.SpriteList()
 
         # Set up the player
         self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling,
@@ -420,11 +415,12 @@ class Game(arcade.Window):
         self.player_list.update()
         self.bullet_list.update()
         self.enemy_list.update()
+        self.physics_paredes.update()
         
     def shoot(self, direction):
 
         # create bullet sprite
-        bullet = Bullet("mapas/bullet.png", sprite_scaling/2)
+        bullet = Bullet(bullet_folder + os.path.sep + "bullet2.png", sprite_scaling/2)
         bullet.center_x = self.player_sprite.center_x
         bullet.center_y = self.player_sprite.center_y
         self.bullet_list.append(bullet)
