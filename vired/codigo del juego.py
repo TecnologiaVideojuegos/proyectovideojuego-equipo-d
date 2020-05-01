@@ -61,10 +61,6 @@ class MainCharacter(Character):
         self.shooting_left = None
         self.shooting_up = None
         self.shooting_down = None
-        self.shooting_right_up = False
-        self.shooting_right_down = False
-        self.shooting_left_up = False
-        self.shooting_left_up = False
 
     def get_money(self):
         """
