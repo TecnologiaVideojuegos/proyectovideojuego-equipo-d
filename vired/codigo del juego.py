@@ -1,10 +1,21 @@
 import arcade
 from random import *
+import os.path
 
 screen_width = 640
 screen_height = 640
 screen_title = "Journey of the Prairie King"
 sprite_scaling = 1
+
+absolute = os.path.abspath(__file__)
+path1 = os.path.dirname(absolute)
+path2 = os.path.dirname(path1)
+print(path2)
+
+sprites_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "personajes"
+bullet_folder =path2 + os.path.sep + "resources" + os.path.sep + "sprites"
+maps_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps"
+layer_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.path.sep + "layers"
 
 
 class Character(arcade.Sprite):
@@ -179,6 +190,9 @@ class Game(arcade.Window):
         self.score = None
         self.spawn_cd = None
 
+        self.physics_enemy = None
+        self.list_physics_enemy = None
+
     def setup(self):
         """
         Set up the game and initialize the variables. Call this function to restart the game
@@ -190,10 +204,11 @@ class Game(arcade.Window):
         self.enemy_list = arcade.SpriteList()
         self.powerUpList = arcade.SpriteList()
         self.physics_paredes = arcade.SpriteList()
+        self.physics_enemy = arcade.SpriteList()
+        self.list_physics_enemy = arcade.SpriteList()
 
         # Set up the player
-        self.player_sprite = MainCharacter(
-            "mapas/personajes/protagonista.png", sprite_scaling,
+        self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling,
             3, 200)
         self.player_list.append(self.player_sprite)
 
@@ -210,18 +225,18 @@ class Game(arcade.Window):
 
     # Rooms created
     def entrance(self):
-        my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/entrada.tmx")
+        my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "entrada.tmx")
 
-        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
-        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
-        self.cosas = arcade.tilemap.process_layer(my_map, "cosas", 1)
-        self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map,"paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map,"suelo ", 1)
+        self.cosas = arcade.tilemap.process_layer(my_map,"cosas", 1)
+        self.obstaculos = arcade.tilemap.process_layer(my_map,"obstaculos", 1)
 
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
 
     def room_1(self):
 
-        my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 1.tmx")
+        my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta1.tmx")
 
         self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
         self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
@@ -232,7 +247,7 @@ class Game(arcade.Window):
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
 
     def room_2(self):
-        my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 2.tmx")
+        my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta2.tmx")
 
         self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
         self.suelo = arcade.tilemap.process_layer(my_map, "suelo", 1)
@@ -245,7 +260,7 @@ class Game(arcade.Window):
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
 
     def room_3(self):
-        my_map = arcade.tilemap.read_tmx("mapas/archivos tsx/planta 3.tmx")
+        my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta3.tmx")
 
         self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
         self.suelo = arcade.tilemap.process_layer(my_map, "suelo", 1)
@@ -279,14 +294,17 @@ class Game(arcade.Window):
                     pos_y = randint(240, 340)
 
                 if foe_choice == 0:
-                    enemy = Enemy("mapas/personajes/enemigo 1.png",
+                    enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
                               1.5, pos_x, pos_y, 1, 10)
+                    self.physics_enemy = arcade.PhysicsEngineSimple(enemy, self.enemy_list)
                 elif foe_choice == 1:
-                    enemy = Enemy("mapas/personajes/enemigo 2.png",
+                    enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
                               1.5, pos_x, pos_y, 2, 10)
+                    self.physics_enemy = arcade.PhysicsEngineSimple(enemy, self.enemy_list)
                 elif foe_choice == 2:
-                    enemy = Enemy("mapas/personajes/enemigo 3.png",
+                    enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
                               1.5, pos_x, pos_y, 3, 10)
+                    self.physics_enemy = arcade.PhysicsEngineSimple(enemy, self.enemy_list)
 
                 self.enemy_list.append(enemy)
 
@@ -387,12 +405,12 @@ class Game(arcade.Window):
         self.player_list.update()
         self.bullet_list.update()
         self.enemy_list.update()
-        self.physics_paredes.update()
+        self.physics_enemy.update()
 
     def shoot(self, direction):
 
         # create bullet sprite
-        bullet = Bullet("bullet.png", sprite_scaling/10)
+        bullet = Bullet(bullet_folder + os.path.sep + "bullet2.png", sprite_scaling/10)
         bullet.center_x = self.player_sprite.center_x
         bullet.center_y = self.player_sprite.center_y
         self.bullet_list.append(bullet)
