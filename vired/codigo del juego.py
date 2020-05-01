@@ -61,6 +61,10 @@ class MainCharacter(Character):
         self.shooting_left = None
         self.shooting_up = None
         self.shooting_down = None
+        self.shooting_right_up = False
+        self.shooting_right_down = False
+        self.shooting_left_up = False
+        self.shooting_left_up = False
 
     def get_money(self):
         """
@@ -373,12 +377,21 @@ class Game(arcade.Window):
 
         # shooting
         if self.cd % 30 == 0:
-            if self.player_sprite.shooting_right:
+
+            if self.player_sprite.shooting_right and self.player_sprite.shooting_up:
+                self.shoot("right_up")
+            elif self.player_sprite.shooting_left and self.player_sprite.shooting_up:
+                self.shoot("left_up")
+            elif self.player_sprite.shooting_right and self.player_sprite.shooting_down:
+                self.shoot("right_down")
+            elif self.player_sprite.shooting_left and self.player_sprite.shooting_down:
+                self.shoot("left_down")
+            elif self.player_sprite.shooting_right:
                 self.shoot("right")
-            elif self.player_sprite.shooting_left:
-                self.shoot("left")
             elif self.player_sprite.shooting_up:
                 self.shoot("up")
+            elif self.player_sprite.shooting_left:
+                self.shoot("left")
             elif self.player_sprite.shooting_down:
                 self.shoot("down")
 
@@ -407,11 +420,11 @@ class Game(arcade.Window):
         self.player_list.update()
         self.bullet_list.update()
         self.enemy_list.update()
-
+        
     def shoot(self, direction):
 
         # create bullet sprite
-        bullet = Bullet(bullet_folder + os.path.sep + "bullet2.png", sprite_scaling/10)
+        bullet = Bullet("mapas/bullet.png", sprite_scaling/2)
         bullet.center_x = self.player_sprite.center_x
         bullet.center_y = self.player_sprite.center_y
         self.bullet_list.append(bullet)
@@ -423,6 +436,18 @@ class Game(arcade.Window):
         if direction == "up":
             bullet.change_y = bullet.speed
         if direction == "down":
+            bullet.change_y = -bullet.speed
+        if direction == "right_up":
+            bullet.change_x = bullet.speed
+            bullet.change_y = bullet.speed
+        if direction == "right_down":
+            bullet.change_x = bullet.speed
+            bullet.change_y = -bullet.speed
+        if direction == "left_up":
+            bullet.change_x = -bullet.speed
+            bullet.change_y = bullet.speed
+        if direction == "left_down":
+            bullet.change_x = -bullet.speed
             bullet.change_y = -bullet.speed
 
     def movimiento(self, enemy, player):
@@ -500,24 +525,30 @@ class Game(arcade.Window):
             self.player_sprite.go_right = True
 
         # player shooting
-        if key == arcade.key.RIGHT and (not self.player_sprite.shooting_left and not self.player_sprite.shooting_up and not self.player_sprite.shooting_down):
-            self.shoot("right")
+        if key == arcade.key.RIGHT:
+            if not self.player_sprite.shooting_left and (not self.player_sprite.shooting_up
+                                                         and not self.player_sprite.shooting_down):
+                self.shoot("right")
             self.player_sprite.shooting_right = True
             self.cd = 0
-        if key == arcade.key.LEFT and (not self.player_sprite.shooting_right and not self.player_sprite.shooting_up and not self.player_sprite.shooting_down):
-            self.shoot("left")
+        if key == arcade.key.LEFT:
+            if not self.player_sprite.shooting_right and (not self.player_sprite.shooting_up
+                                                          and not self.player_sprite.shooting_down):
+                self.shoot("left")
             self.player_sprite.shooting_left = True
             self.cd = 0
-        if key == arcade.key.UP and (not self.player_sprite.shooting_right and not self.player_sprite.shooting_left and not self.player_sprite.shooting_down):
-            self.shoot("up")
+        if key == arcade.key.UP:
+            if not self.player_sprite.shooting_left and (not self.player_sprite.shooting_right
+                                                         and not self.player_sprite.shooting_down):
+                self.shoot("up")
             self.player_sprite.shooting_up = True
             self.cd = 0
-        if key == arcade.key.DOWN and (not self.player_sprite.shooting_right and not self.player_sprite.shooting_up and not self.player_sprite.shooting_left):
-            self.shoot("down")
+        if key == arcade.key.DOWN:
+            if not self.player_sprite.shooting_left and (not self.player_sprite.shooting_up
+                                                         and not self.player_sprite.shooting_right):
+                self.shoot("down")
             self.player_sprite.shooting_down = True
             self.cd = 0
-
-        # hacer algo del rollo if key == arcade.key.RIGHT and self.shooting_up, que vaya en diagonal
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W:
