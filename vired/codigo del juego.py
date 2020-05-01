@@ -1,6 +1,7 @@
 import arcade
 from random import *
 import os.path
+import pymunk
 
 screen_width = 640
 screen_height = 640
@@ -295,18 +296,16 @@ class Game(arcade.Window):
 
                 if foe_choice == 0:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                              1.5, pos_x, pos_y, 1, 10)
-                    self.physics_enemy = arcade.PhysicsEngineSimple(enemy, self.enemy_list)
+                              1.5, pos_x, pos_y, 1, 3)
                 elif foe_choice == 1:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                              1.5, pos_x, pos_y, 2, 10)
-                    self.physics_enemy = arcade.PhysicsEngineSimple(enemy, self.enemy_list)
+                              1.5, pos_x, pos_y, 2, 2)
                 elif foe_choice == 2:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                              1.5, pos_x, pos_y, 3, 10)
-                    self.physics_enemy = arcade.PhysicsEngineSimple(enemy, self.enemy_list)
+                              1.5, pos_x, pos_y, 3, 1)
 
                 self.enemy_list.append(enemy)
+                self.physics_enemy = arcade.PhysicsEngineSimple(enemy, self.enemy_list)
 
     def on_update(self, delta_time):
         """ Movement and game logic """  # collisions go here
@@ -395,17 +394,19 @@ class Game(arcade.Window):
                     enemy.remove_from_sprite_lists()
                     self.score += 1
 
-        for enemy in self.enemy_list:
-            self.movimiento(enemy, self.player_sprite)
-
         if self.spawn_cd % 150 == 0:
             self.create_enemies(self.max_enemies)
+        for enemy in self.enemy_list:
+            self.movimiento(enemy, self.player_sprite)
+            self.physics_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
+            for enemy in self.physics_enemy:
+                if len(self.physics_enemy) == 2:
+                    enemy.change_y =0
 
         # update everything
         self.player_list.update()
         self.bullet_list.update()
         self.enemy_list.update()
-        self.physics_enemy.update()
 
     def shoot(self, direction):
 
