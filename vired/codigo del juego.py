@@ -10,10 +10,9 @@ sprite_scaling = 1
 absolute = os.path.abspath(__file__)
 path1 = os.path.dirname(absolute)
 path2 = os.path.dirname(path1)
-print(path2)
 
 sprites_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "personajes"
-bullet_folder =path2 + os.path.sep + "resources" + os.path.sep + "sprites"
+bullet_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites"
 maps_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps"
 layer_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.path.sep + "layers"
 
@@ -182,9 +181,13 @@ class Game(arcade.Window):
         self.cuerpos = None
         self.sangre = None
         self.physics_paredes = None
+        self.physics_paredes_enemy = None
 
         # number of the room the player is
         self.current_room = 0
+
+        self.collision_enemy = None
+        self.physics_enemy_list = None
 
         self.cd = None
         self.score = None
@@ -201,10 +204,11 @@ class Game(arcade.Window):
         self.enemy_list = arcade.SpriteList()
         self.powerUpList = arcade.SpriteList()
         self.physics_paredes = arcade.SpriteList()
+        self.physics_enemy_list = arcade.SpriteList()
 
         # Set up the player
         self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling,
-            3, 200)
+            3, 300)
         self.player_list.append(self.player_sprite)
 
         # The entrances is the first room
@@ -290,16 +294,15 @@ class Game(arcade.Window):
 
                 if foe_choice == 0:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                              1.5, pos_x, pos_y, 1, 3)
+                              1, pos_x, pos_y, 1, 2)
                 elif foe_choice == 1:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                              1.5, pos_x, pos_y, 2, 2)
+                              1, pos_x, pos_y, 2, 2)
                 elif foe_choice == 2:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                              1.5, pos_x, pos_y, 3, 1)
+                              1, pos_x, pos_y, 3, 2)
 
                 self.enemy_list.append(enemy)
-                self.physics_enemy = arcade.PhysicsEngineSimple(enemy, self.enemy_list)
 
     def on_update(self, delta_time):
         """ Movement and game logic """  # collisions go here
@@ -364,6 +367,10 @@ class Game(arcade.Window):
             self.player_sprite.center_y = screen_height - 32
         if self.player_sprite.center_y - 30 <= 0:
             self.player_sprite.center_y = 30"""
+        for enemy in self.enemy_list:
+            self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
+            for i in range(len(self.collision_enemy)):
+                self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
 
         # shooting
         if self.cd % 30 == 0:
@@ -401,17 +408,14 @@ class Game(arcade.Window):
             self.create_enemies(self.max_enemies)
         for enemy in self.enemy_list:
             self.movimiento(enemy, self.player_sprite)
-            self.physics_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
-            for enemy in self.physics_enemy:
-                if len(self.physics_enemy) == 2:
-                    enemy.change_y =0
 
         # update everything
         self.player_list.update()
         self.bullet_list.update()
         self.enemy_list.update()
         self.physics_paredes.update()
-        
+        self.physics_enemy_list.update()
+
     def shoot(self, direction):
 
         # create bullet sprite
