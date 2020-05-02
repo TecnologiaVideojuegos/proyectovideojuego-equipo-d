@@ -1,7 +1,6 @@
 import arcade
 from random import *
 import os.path
-import pymunk
 
 screen_width = 640
 screen_height = 640
