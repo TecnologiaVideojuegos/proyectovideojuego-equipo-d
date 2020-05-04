@@ -19,7 +19,6 @@ layer_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.pat
 
 class Character(arcade.Sprite):
     def __init__(self, filename, scale, number_of_hearts, speed):
-
         super().__init__(filename, scale)
 
         self.speed = speed
@@ -88,7 +87,6 @@ class MainCharacter(Character):
 
 class Enemy(Character):
     def __init__(self, filename, scale, pos_x, pos_y, number_of_hearts, speed):
-
         super().__init__(filename, scale, number_of_hearts, speed)
         self.center_x = pos_x
         self.center_y = pos_y
@@ -149,7 +147,6 @@ class Bullet(arcade.Sprite):
         self.speed = 5
 
     def update(self):
-
         self.center_x += self.change_x
         self.center_y += self.change_y
 
@@ -181,7 +178,13 @@ class Game(arcade.Window):
         self.cuerpos = None
         self.sangre = None
         self.physics_paredes = None
+        self.physics_cosas = None
+        self.physics_obstaculos = None
         self.physics_paredes_enemy = None
+        self.physics_obstaculos2 = None
+        self.physics_perfeccionar = None
+        self.physics_cuerpos = None
+        self.physics_sangre = None
 
         # number of the room the player is
         self.current_room = 0
@@ -203,12 +206,21 @@ class Game(arcade.Window):
         self.bullet_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
         self.powerUpList = arcade.SpriteList()
-        self.physics_paredes = arcade.SpriteList()
+        self.physics_paredes_enemy = arcade.SpriteList()
         self.physics_enemy_list = arcade.SpriteList()
+
+        self.physics_paredes = arcade.SpriteList()
+        self.physics_cosas = arcade.SpriteList()
+        self.physics_obstaculos = arcade.SpriteList()
+        self.physics_paredes_enemy = arcade.SpriteList()
+        self.physics_obstaculos2 = arcade.SpriteList()
+        self.physics_perfeccionar = arcade.SpriteList()
+        self.physics_cuerpos = arcade.SpriteList()
+        self.physics_sangre = arcade.SpriteList()
 
         # Set up the player
         self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling,
-            3, 300)
+                                           3, 300)
         self.player_list.append(self.player_sprite)
 
         # The entrances is the first room
@@ -226,15 +238,16 @@ class Game(arcade.Window):
     def entrance(self):
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "entrada.tmx")
 
-        self.paredes = arcade.tilemap.process_layer(my_map,"paredes", 1)
-        self.suelo = arcade.tilemap.process_layer(my_map,"suelo ", 1)
-        self.cosas = arcade.tilemap.process_layer(my_map,"cosas", 1)
-        self.obstaculos = arcade.tilemap.process_layer(my_map,"obstaculos", 1)
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
+        self.cosas = arcade.tilemap.process_layer(my_map, "cosas", 1)
+        self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
 
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
+        self.physics_cosas = arcade.PhysicsEngineSimple(self.player_sprite, self.cosas)
+        self.physics_obstaculos = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos)
 
     def room_1(self):
-
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta1.tmx")
 
         self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
@@ -244,6 +257,9 @@ class Game(arcade.Window):
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
 
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
+        self.physics_obstaculos = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos)
+        self.physics_obstaculos2 = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos_2)
+        self.physics_perfeccionar = arcade.PhysicsEngineSimple(self.player_sprite, self.perfeccionar)
 
     def room_2(self):
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta2.tmx")
@@ -257,6 +273,11 @@ class Game(arcade.Window):
         self.sangre = arcade.tilemap.process_layer(my_map, "sangre", 1)
 
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
+        self.physics_obstaculos = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos)
+        self.physics_obstaculos2 = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos_2)
+        self.physics_perfeccionar = arcade.PhysicsEngineSimple(self.player_sprite, self.perfeccionar)
+        self.physics_cuerpos = arcade.PhysicsEngineSimple(self.player_sprite, self.cuerpos)
+        self.physics_sangre = arcade.PhysicsEngineSimple(self.player_sprite, self.sangre)
 
     def room_3(self):
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta3.tmx")
@@ -268,6 +289,9 @@ class Game(arcade.Window):
         self.cuerpos = arcade.tilemap.process_layer(my_map, "cuerpos", 1)
 
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
+        self.physics_obstaculos = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos)
+        self.physics_cuerpos = arcade.PhysicsEngineSimple(self.player_sprite, self.cuerpos)
+        self.physics_sangre = arcade.PhysicsEngineSimple(self.player_sprite, self.sangre)
 
     def create_enemies(self, max_number):
 
@@ -294,13 +318,13 @@ class Game(arcade.Window):
 
                 if foe_choice == 0:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                              1, pos_x, pos_y, 1, 2)
+                                  1, pos_x, pos_y, 1, 2)
                 elif foe_choice == 1:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                              1, pos_x, pos_y, 2, 2)
+                                  1, pos_x, pos_y, 2, 2)
                 elif foe_choice == 2:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                              1, pos_x, pos_y, 3, 2)
+                                  1, pos_x, pos_y, 3, 2)
 
                 self.enemy_list.append(enemy)
 
@@ -413,13 +437,38 @@ class Game(arcade.Window):
         self.player_list.update()
         self.bullet_list.update()
         self.enemy_list.update()
-        self.physics_paredes.update()
-        self.physics_enemy_list.update()
+        if self.current_room == 0:
+            self.physics_paredes.update()
+            self.physics_cosas.update()
+            self.physics_obstaculos.update()
+
+        # Room 1
+        if self.current_room == 1:
+            self.physics_paredes.update()
+            self.physics_obstaculos.update()
+            self.physics_obstaculos2.update()
+            self.physics_perfeccionar.update()
+
+        # Room 2
+        if self.current_room == 2:
+            self.physics_paredes.update()
+            self.physics_obstaculos.update()
+            self.physics_obstaculos2.update()
+            self.physics_perfeccionar.update()
+            self.physics_sangre.update()
+            self.physics_cuerpos.update()
+
+        # Room 3
+        if self.current_room == 3:
+            self.physics_paredes.update()
+            self.physics_sangre.update()
+            self.physics_cuerpos.update()
+            self.physics_obstaculos.update()
 
     def shoot(self, direction):
 
         # create bullet sprite
-        bullet = Bullet(bullet_folder + os.path.sep + "bullet2.png", sprite_scaling/2)
+        bullet = Bullet(bullet_folder + os.path.sep + "bullet2.png", sprite_scaling / 2)
         bullet.center_x = self.player_sprite.center_x
         bullet.center_y = self.player_sprite.center_y
         self.bullet_list.append(bullet)
@@ -506,6 +555,7 @@ class Game(arcade.Window):
         self.player_list.draw()
         self.bullet_list.draw()
         self.enemy_list.draw()
+        self.physics_enemy_list.update()
 
     def on_key_press(self, key, modifiers):
 
