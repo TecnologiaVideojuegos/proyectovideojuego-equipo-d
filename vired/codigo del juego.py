@@ -150,10 +150,40 @@ class Bullet(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
+class Menu(arcade.View):
+    def on_show(self):
+        arcade.set_background_color(arcade.color.WHITE)
 
-class Game(arcade.Window):
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("VIR-ED", screen_width // 2, screen_height // 2,
+                         arcade.color.BLACK, font_size=30, anchor_x="center")
+        arcade.draw_text("Click para empezar", screen_width // 2, screen_height // 3,
+                         arcade.color.BLACK, font_size=30, anchor_x="center")
+
+    def on_mouse_press(self, _x, _y, _button, _modifiers):
+        game_view = Game()
+        game_view.setup()
+        self.window.show_view(game_view)
+
+
+class GameOverView(arcade.View):
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("Game Over - press ESCAPE to advance", screen_width // 2, screen_height // 2,
+                         arcade.color.WHITE, 30, anchor_x="center")
+
+    def on_key_press(self, key, _modifiers):
+        if key == arcade.key.ESCAPE:
+            menu_view = Menu()
+            self.window.show_view(menu_view)
+
+class Game(arcade.View):
     def __init__(self):
-        super().__init__(screen_width, screen_height, screen_title)
+        super().__init__()
 
         # lists
         self.player_list = None
@@ -616,8 +646,9 @@ class Game(arcade.Window):
 
 
 def main():
-    game = Game()
-    game.setup()
+    window = arcade.Window(screen_width, screen_height, screen_title)
+    menu = Menu()
+    window.show_view(menu)
     arcade.run()
 
 
