@@ -16,9 +16,6 @@ bullet_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os
 maps_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps"
 layer_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.path.sep + "layers"
 
--15
-5
-
 
 class Character(arcade.Sprite):
     def __init__(self, filename, scale, number_of_hearts, speed):
