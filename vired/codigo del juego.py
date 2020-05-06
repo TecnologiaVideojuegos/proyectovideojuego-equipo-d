@@ -195,11 +195,13 @@ class Game(arcade.View):
         self.enemy_list = None
         self.powerUpList = None
         self.weapon_list = None
+        self.invisible_list = None
 
         # main character and bullet sprites
         self.player_sprite = None
         self.bullet_sprite = None
         self.weapon = None
+        self.invisible = None
 
         # max number of enemies
         self.max_enemies = None
@@ -555,13 +557,13 @@ class Game(arcade.View):
 
                 if foe_choice == 0:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                                  1, pos_x, pos_y, 1, 0)
+                                  1, pos_x, pos_y, 1, 2)
                 elif foe_choice == 1:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                                  1, pos_x, pos_y, 2, 0)
+                                  1, pos_x, pos_y, 2, 3)
                 elif foe_choice == 2:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                                  1, pos_x, pos_y, 3, 0)
+                                  1, pos_x, pos_y, 4, 1)
 
                 self.enemy_list.append(enemy)
 
@@ -584,10 +586,10 @@ class Game(arcade.View):
         if 20 <= self.time <= 40:
             if self.spawn_cd % 120 == 0:
                 self.create_enemies()
-        if 40 <= self.time <= 50:
+        if 40 <= self.time <= 60:
             if self.spawn_cd % 90 == 0:
                 self.create_enemies()
-        if self.time > 50:
+        if self.time > 60:
             self.max_enemies = 0
 
     def shoot(self, direction):
@@ -718,14 +720,13 @@ class Game(arcade.View):
         # enemy movement
         for enemy in self.enemy_list:
             self.movimiento(enemy, self.player_sprite)
-            # game over if player is hit 
+            # game over if player is hit
             if arcade.check_for_collision(self.player_sprite, enemy):
                 self.player_sprite.respawn()
                 arcade.pause(1)
                 game_over = GameOverView()
                 self.window.show_view(game_over)
-                
-                
+
         # update everything
         self.collision()
         self.player_list.update()
