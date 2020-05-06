@@ -153,14 +153,14 @@ class Bullet(arcade.Sprite):
 
 class Menu(arcade.View):
     def on_show(self):
-        arcade.set_background_color(arcade.color.WHITE)
+        arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text("VIR-ED", screen_width // 2, screen_height // 2,
-                         arcade.color.BLACK, font_size=30, anchor_x="center")
+                         arcade.color.WHITE, font_size=30, anchor_x="center")
         arcade.draw_text("Click para empezar", screen_width // 2, screen_height // 3,
-                         arcade.color.BLACK, font_size=30, anchor_x="center")
+                         arcade.color.WHITE, font_size=30, anchor_x="center")
 
     def on_mouse_press(self, _x, _y, _button, _modifiers):
         game_view = Game()
@@ -176,6 +176,8 @@ class GameOverView(arcade.View):
         arcade.start_render()
         arcade.draw_text("Game Over - press ESCAPE to advance", screen_width // 2, screen_height // 2,
                          arcade.color.WHITE, 30, anchor_x="center")
+        arcade.draw_text("Pulsa espacio para volver al menu", screen_width // 2, screen_height // 3,
+                         arcade.color.WHITE, font_size=30, anchor_x="center")
 
     def on_key_press(self, key, _modifiers):
         if key == arcade.key.ESCAPE:
@@ -716,7 +718,14 @@ class Game(arcade.View):
         # enemy movement
         for enemy in self.enemy_list:
             self.movimiento(enemy, self.player_sprite)
-
+            # game over if player is hit 
+            if arcade.check_for_collision(self.player_sprite, enemy):
+                self.player_sprite.respawn()
+                arcade.pause(1)
+                game_over = GameOverView()
+                self.window.show_view(game_over)
+                
+                
         # update everything
         self.collision()
         self.player_list.update()
