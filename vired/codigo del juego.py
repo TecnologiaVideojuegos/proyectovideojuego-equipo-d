@@ -4,7 +4,7 @@ import os.path
 
 screen_width = 640
 screen_height = 640
-screen_title = "Journey of the Prairie King"
+screen_title = "VIR-ED"
 sprite_scaling = 1
 
 absolute = os.path.abspath(__file__)
@@ -211,6 +211,7 @@ class Game(arcade.View):
         self.perfeccionar = None
         self.cuerpos = None
         self.sangre = None
+        self.escaleras = None
 
         # physics
         self.physics_paredes = None
@@ -250,6 +251,7 @@ class Game(arcade.View):
         self.enemy_list = arcade.SpriteList()
         self.weapon_list = arcade.SpriteList()
         self.powerUpList = arcade.SpriteList()
+        self.invisible_list = arcade.SpriteList()
         self.physics_paredes_enemy = arcade.SpriteList()
         self.physics_enemy_list = arcade.SpriteList()
         self.physics_paredes = arcade.SpriteList()
@@ -292,6 +294,7 @@ class Game(arcade.View):
         self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.cosas = arcade.tilemap.process_layer(my_map, "cosas", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
+        self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
 
         # physics layers and player
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
@@ -373,6 +376,7 @@ class Game(arcade.View):
             self.suelo.draw()
             self.cosas.draw()
             self.obstaculos.draw()
+            self.escaleras.draw()
 
         # Room 1
         if self.current_room == 1:
@@ -501,7 +505,7 @@ class Game(arcade.View):
             for enemy in range(random_number):
                 pos_x = 0
                 pos_y = 0
-                place_choice = randint(2, 3)
+                place_choice = randint(0, 3)
                 foe_choice = randint(0, 2)
 
                 if place_choice == 0:
@@ -549,13 +553,13 @@ class Game(arcade.View):
 
                 if foe_choice == 0:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                                  1, pos_x, pos_y, 1, 2)
+                                  1, pos_x, pos_y, 1, 0)
                 elif foe_choice == 1:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                                  1, pos_x, pos_y, 2, 3)
+                                  1, pos_x, pos_y, 2, 0)
                 elif foe_choice == 2:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                                  1, pos_x, pos_y, 3, 1)
+                                  1, pos_x, pos_y, 3, 0)
 
                 self.enemy_list.append(enemy)
 
@@ -718,6 +722,7 @@ class Game(arcade.View):
         self.player_list.update()
         self.bullet_list.update()
         self.enemy_list.update()
+        self.physics_enemy_list.update()
 
     def on_draw(self):
         """
@@ -736,7 +741,6 @@ class Game(arcade.View):
         self.weapon_list.draw()
         self.bullet_list.draw()
         self.enemy_list.draw()
-        self.physics_enemy_list.update()
 
     def on_key_press(self, key, modifiers):
 
