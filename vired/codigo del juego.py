@@ -58,6 +58,11 @@ class MainCharacter(Character):
         self.shooting_left = None
         self.shooting_up = None
         self.shooting_down = None
+        
+    def respawn(self):
+
+        self.center_x = screen_width // 2
+        self.center_y = screen_height // 2
 
     def get_money(self):
         """
