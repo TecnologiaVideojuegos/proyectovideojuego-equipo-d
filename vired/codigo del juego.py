@@ -179,9 +179,9 @@ class GameOverView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("Game Over - press ESCAPE to advance", screen_width // 2, screen_height // 2,
+        arcade.draw_text("Game Over", screen_width // 2, screen_height // 2,
                          arcade.color.WHITE, 30, anchor_x="center")
-        arcade.draw_text("Pulsa espacio para volver al menu", screen_width // 2, screen_height // 3,
+        arcade.draw_text("Pulsa escape para volver al menu", screen_width // 2, screen_height // 3,
                          arcade.color.WHITE, font_size=30, anchor_x="center")
 
     def on_key_press(self, key, _modifiers):
