@@ -13,6 +13,7 @@ path2 = os.path.dirname(path1)
 
 sprites_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "personajes"
 bullet_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "armas"
+powerups_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "powerups"
 maps_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps"
 layer_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.path.sep + "layers"
 
@@ -201,12 +202,14 @@ class Game(arcade.View):
         self.powerUpList = None
         self.weapon_list = None
         self.invisible_list = None
+        self.bomb_list = None
 
         # main character and bullet sprites
         self.player_sprite = None
         self.bullet_sprite = None
         self.weapon = None
         self.invisible = None
+        self.bomb = None
 
         # max number of enemies
         self.max_enemies = None
@@ -248,6 +251,10 @@ class Game(arcade.View):
         self.score = None
         self.spawn_cd = None
         self.time = None
+        self.time_quotient = None
+
+        self.start = False
+        self.space = False
 
     def setup(self):
         """
@@ -271,15 +278,22 @@ class Game(arcade.View):
         self.physics_perfeccionar = arcade.SpriteList()
         self.physics_cuerpos = arcade.SpriteList()
         self.physics_sangre = arcade.SpriteList()
+        self.bomb_list = arcade.SpriteList()
 
         # Set up the player
         self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling,
                                            3, 200)
         self.player_list.append(self.player_sprite)
+
+        # Weapon
         self.weapon = arcade.Sprite(bullet_folder + os.path.sep + "jeringa1.png", sprite_scaling/1.5, center_x=self.player_sprite.center_x + 15
                                     , center_y=self.player_sprite.center_y - 5)
         self.weapon.angle = 90
         self.weapon_list.append(self.weapon)
+
+        # Weapon
+        self.bomb = arcade.Sprite(sprites_folder + os.path.sep + "Invisible.png", 1, center_x= 320, center_y= 320)
+        self.bomb_list.append(self.bomb)
 
         # The entrances is the first room
         self.entrance()
@@ -290,7 +304,7 @@ class Game(arcade.View):
         # Set up counters
         self.cd = 0
         self.score = 0
-        self.time = 0
+        self.time = 61
         self.spawn_cd = 0
 
     # Rooms created
@@ -423,8 +437,6 @@ class Game(arcade.View):
             self.player_sprite.center_y = 620
             self.player_sprite.center_x = 416
 
-            self.time = 0
-
         # Room 1 -> Room 2
         if self.player_sprite.center_y > 635 and 298 < self.player_sprite.center_x < 343 and self.current_room == 1:
             self.current_room = 2
@@ -432,16 +444,12 @@ class Game(arcade.View):
             self.player_sprite.center_y = 30
             self.player_sprite.center_x = 288
 
-            self.time = 0
-
         # Room 2 -> Room 3
         if self.player_sprite.center_y > 635 and 256 < self.player_sprite.center_x < 320 and self.current_room == 2:
             self.current_room = 3
             self.room_3()
             self.player_sprite.center_y = 30
             self.player_sprite.center_x = 256
-
-            self.time = 0
 
         # Going down stairs
         # Room 3 -> Room 2
@@ -496,81 +504,82 @@ class Game(arcade.View):
             self.physics_obstaculos.update()
 
     def create_enemies(self):
-        max_number = 0
-        random_number = 0
-        if self.current_room == 0:
-            max_number = 5
-            random_number = randint(1, 2)
-        if self.current_room == 1:
-            max_number = 8
-            random_number = randint(1, 3)
-        if self.current_room == 2:
-            max_number = 11
-            random_number = randint(2, 3)
-        if self.current_room == 3:
-            max_number = 14
-            random_number = randint(2, 4)
-        if len(self.enemy_list) < max_number:
-            for enemy in range(random_number):
-                pos_x = 0
-                pos_y = 0
-                place_choice = randint(0, 3)
-                foe_choice = randint(0, 2)
+        if self.start:
+            max_number = 0
+            random_number = 0
+            if self.current_room == 0:
+                max_number = 5
+                random_number = randint(1, 2)
+            if self.current_room == 1:
+                max_number = 8
+                random_number = randint(1, 3)
+            if self.current_room == 2:
+                max_number = 11
+                random_number = randint(2, 3)
+            if self.current_room == 3:
+                max_number = 14
+                random_number = randint(2, 4)
+            if len(self.enemy_list) < max_number:
+                for enemy in range(random_number):
+                    pos_x = 0
+                    pos_y = 0
+                    place_choice = randint(0, 3)
+                    foe_choice = randint(0, 2)
 
-                if place_choice == 0:
-                    pos_x = randint(610, 640)
-                    if self.current_room == 0 or self.current_room == 1:
-                        pos_y = 300
-                    if self.current_room == 2:
-                        pos_y = 270
-                    if self.current_room == 3:
-                        pos_y = 330
-                if place_choice == 1:
-                    pos_x = randint(0, 30)
-                    if self.current_room == 0 or self.current_room == 1:
-                        pos_y = 300
-                    if self.current_room == 2:
-                        pos_y = 390
-                    if self.current_room == 3:
-                        pos_y = 330
-                if place_choice == 2:
-                    if self.current_room == 0:
-                        pos_x = randint(0, 30)
-                        pos_y = 300
-                    if self.current_room == 1:
-                        pos_x = randint(0, 30)
-                        pos_y = 360
-                    if self.current_room == 2:
-                        pos_x = 390
-                        pos_y = randint(610, 640)
-                    if self.current_room == 3:
-                        pos_x = 300
-                        pos_y = randint(610, 640)
-                if place_choice == 3:
-                    if self.current_room == 0:
+                    if place_choice == 0:
                         pos_x = randint(610, 640)
-                        pos_y = 300
-                    if self.current_room == 1:
-                        pos_x = 330
-                        pos_y = randint(0, 30)
-                    if self.current_room == 2:
-                        pos_x = 390
-                        pos_y = randint(610, 640)
-                    if self.current_room == 3:
-                        pos_x = 300
-                        pos_y = randint(610, 640)
+                        if self.current_room == 0 or self.current_room == 1:
+                            pos_y = 300
+                        if self.current_room == 2:
+                            pos_y = 270
+                        if self.current_room == 3:
+                            pos_y = 330
+                    if place_choice == 1:
+                        pos_x = randint(0, 30)
+                        if self.current_room == 0 or self.current_room == 1:
+                            pos_y = 300
+                        if self.current_room == 2:
+                            pos_y = 390
+                        if self.current_room == 3:
+                            pos_y = 330
+                    if place_choice == 2:
+                        if self.current_room == 0:
+                            pos_x = randint(0, 30)
+                            pos_y = 300
+                        if self.current_room == 1:
+                            pos_x = randint(0, 30)
+                            pos_y = 360
+                        if self.current_room == 2:
+                            pos_x = 390
+                            pos_y = randint(610, 640)
+                        if self.current_room == 3:
+                            pos_x = 300
+                            pos_y = randint(610, 640)
+                    if place_choice == 3:
+                        if self.current_room == 0:
+                            pos_x = randint(610, 640)
+                            pos_y = 300
+                        if self.current_room == 1:
+                            pos_x = 330
+                            pos_y = randint(0, 30)
+                        if self.current_room == 2:
+                            pos_x = 390
+                            pos_y = randint(610, 640)
+                        if self.current_room == 3:
+                            pos_x = 300
+                            pos_y = randint(610, 640)
 
-                if foe_choice == 0:
-                    enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                                  1, pos_x, pos_y, 1, 2)
-                elif foe_choice == 1:
-                    enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                                  1, pos_x, pos_y, 2, 3)
-                elif foe_choice == 2:
-                    enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                                  1, pos_x, pos_y, 4, 1)
+                    if foe_choice == 0:
+                        enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
+                                      1, pos_x, pos_y, 1, 2)
+                    elif foe_choice == 1:
+                        enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
+                                      1, pos_x, pos_y, 2, 3)
+                    elif foe_choice == 2:
+                        enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
+                                      1, pos_x, pos_y, 4, 1)
 
-                self.enemy_list.append(enemy)
+                    self.enemy_list.append(enemy)
 
     def movimiento(self, enemy, player):
 
@@ -585,17 +594,18 @@ class Game(arcade.View):
             enemy.center_y -= enemy.speed
 
     def waves(self):
-        if self.time <= 20:
-            if self.spawn_cd % 150 == 0:
+        if 40 <= self.time_quotient <= 59:
+            if self.spawn_cd % 300 == 0:
                 self.create_enemies()
-        if 20 <= self.time <= 40:
-            if self.spawn_cd % 120 == 0:
+        if 10 <= self.time_quotient <= 40:
+            if self.spawn_cd % 240 == 0:
                 self.create_enemies()
-        if 40 <= self.time <= 60:
-            if self.spawn_cd % 90 == 0:
+        if 10 <= self.time_quotient:
+            if self.spawn_cd % 180 == 0:
                 self.create_enemies()
-        if self.time > 60:
+        if self.time_quotient < 0:
             self.max_enemies = 0
+            self.start = False
 
     def shoot(self, direction):
 
@@ -637,12 +647,12 @@ class Game(arcade.View):
     def collision(self):
         # collision enemy-player, enemy-enemy and death
         for enemy in self.enemy_list:
-            self.collision_main_character = arcade.check_for_collision_with_list(enemy, self.player_list)
-            # player death
-            if self.collision_main_character:
-                self.player_sprite.kill()
-                self.weapon.kill()
-                self.movement = True
+            # game over if player is hit
+            if arcade.check_for_collision(self.player_sprite, enemy):
+                self.player_sprite.respawn()
+                arcade.pause(1)
+                game_over = GameOverView()
+                self.window.show_view(game_over)
 
             # enemies physics
             self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
@@ -674,13 +684,20 @@ class Game(arcade.View):
         if 4.99 <= self.player_sprite.center_y - self.weapon.center_y or 5.01 >= self.player_sprite.center_y - self.weapon.center_y:
             self.weapon.center_y = self.player_sprite.center_y - 5
 
+        start_the_wave = arcade.check_for_collision_with_list(self.player_sprite, self.bomb_list)
+        if start_the_wave and self.space:
+            self.bomb.kill()
+            self.start = True
+
     def on_update(self, delta_time):
         """ Movement and game logic """  # collisions go here
 
         # Counters
         self.cd += 2
         self.spawn_cd += 1
-        self.time += 1 * delta_time
+        if self.start:
+            self.time -= delta_time
+        self.time_quotient = self.time//1
 
         # Room updates
         self.room_update()
@@ -725,18 +742,13 @@ class Game(arcade.View):
         # enemy movement
         for enemy in self.enemy_list:
             self.movimiento(enemy, self.player_sprite)
-            # game over if player is hit
-            if arcade.check_for_collision(self.player_sprite, enemy):
-                self.player_sprite.respawn()
-                arcade.pause(1)
-                game_over = GameOverView()
-                self.window.show_view(game_over)
 
         # update everything
         self.collision()
         self.player_list.update()
         self.bullet_list.update()
         self.enemy_list.update()
+        self.bomb_list.update()
         self.physics_enemy_list.update()
 
     def on_draw(self):
@@ -749,12 +761,14 @@ class Game(arcade.View):
         # Room entrance
         self.room_draw()
 
-        arcade.draw_text(f"Score: {self.score}", 550, 600, arcade.color.WHITE, 15)
+        arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
+        arcade.draw_text(f"Time wave: {self.time_quotient}", 400, 10, arcade.color.WHITE, 25)
 
         # draw all sprites
         self.player_list.draw()
         self.weapon_list.draw()
         self.bullet_list.draw()
+        self.bomb_list.draw()
         self.enemy_list.draw()
 
     def on_key_press(self, key, modifiers):
@@ -795,6 +809,9 @@ class Game(arcade.View):
             self.player_sprite.shooting_down = True
             self.cd = 0
 
+        if key == arcade.key.SPACE:
+            self.space = True
+
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W:
             self.player_sprite.go_up = False
@@ -813,6 +830,9 @@ class Game(arcade.View):
             self.player_sprite.shooting_up = False
         if key == arcade.key.DOWN:
             self.player_sprite.shooting_down = False
+
+        if key == arcade.key.SPACE:
+            self.space = False
 
 
 def main():
