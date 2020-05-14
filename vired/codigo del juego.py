@@ -14,6 +14,7 @@ path2 = os.path.dirname(path1)
 sprites_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "personajes"
 bullet_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "armas"
 powerups_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "powerups"
+resources_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites"
 maps_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps"
 layer_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.path.sep + "layers"
 
@@ -256,6 +257,11 @@ class Game(arcade.View):
         self.start = False
         self.space = False
 
+        self.finish_0 = True
+        self.finish_1 = True
+        self.finish_2 = True
+        self.finish_3 = True
+
     def setup(self):
         """
         Set up the game and initialize the variables. Call this function to restart the game
@@ -291,10 +297,6 @@ class Game(arcade.View):
         self.weapon.angle = 90
         self.weapon_list.append(self.weapon)
 
-        # Weapon
-        self.bomb = arcade.Sprite(sprites_folder + os.path.sep + "Invisible.png", 1, center_x= 320, center_y= 320)
-        self.bomb_list.append(self.bomb)
-
         # The entrances is the first room
         self.entrance()
 
@@ -304,7 +306,7 @@ class Game(arcade.View):
         # Set up counters
         self.cd = 0
         self.score = 0
-        self.time = 61
+        self.time = 60
         self.spawn_cd = 0
 
     # Rooms created
@@ -318,6 +320,14 @@ class Game(arcade.View):
         self.cosas = arcade.tilemap.process_layer(my_map, "cosas", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
+
+        # bomb
+        if self.finish_0:
+            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320, center_y=320)
+            self.bomb_list.append(self.bomb)
+
+        if len(self.bomb_list)!=0 and not self.finish_0:
+            self.bomb.kill()
 
         # physics layers and player
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
@@ -337,6 +347,15 @@ class Game(arcade.View):
         self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos 2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
+        self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
+
+        # bomb
+        if self.finish_1:
+            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320, center_y=320)
+            self.bomb_list.append(self.bomb)
+
+        if len(self.bomb_list)!=0 and not self.finish_1:
+            self.bomb.kill()
 
         # physics layers and player
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
@@ -359,6 +378,14 @@ class Game(arcade.View):
         self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
         self.cuerpos = arcade.tilemap.process_layer(my_map, "cuerpos", 1)
         self.sangre = arcade.tilemap.process_layer(my_map, "sangre", 1)
+        self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
+
+        # bomb
+        if self.finish_2:
+            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320, center_y=320)
+            self.bomb_list.append(self.bomb)
+        if len(self.bomb_list)!=0 and not self.finish_2:
+            self.bomb.kill()
 
         # physics layers and player
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
@@ -381,6 +408,15 @@ class Game(arcade.View):
         self.sangre = arcade.tilemap.process_layer(my_map, "sangre", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
         self.cuerpos = arcade.tilemap.process_layer(my_map, "cuerpos", 1)
+        self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
+
+        # bomb
+        if self.finish_3:
+            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320, center_y=320)
+            self.bomb_list.append(self.bomb)
+
+        if len(self.bomb_list)!=0 and not self.finish_2:
+            self.bomb.kill()
 
         # physics layers and player
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
@@ -408,6 +444,7 @@ class Game(arcade.View):
             self.obstaculos.draw()
             self.obstaculos_2.draw()
             self.perfeccionar.draw()
+            self.escaleras.draw()
 
         # Room 2
         if self.current_room == 2:
@@ -418,6 +455,7 @@ class Game(arcade.View):
             self.perfeccionar.draw()
             self.sangre.draw()
             self.cuerpos.draw()
+            self.escaleras.draw()
 
         # Room 3
         if self.current_room == 3:
@@ -426,6 +464,7 @@ class Game(arcade.View):
             self.obstaculos.draw()
             self.sangre.draw()
             self.cuerpos.draw()
+            self.escaleras.draw()
 
     def room_update(self):
 
@@ -479,6 +518,7 @@ class Game(arcade.View):
             self.physics_paredes.update()
             self.physics_cosas.update()
             self.physics_obstaculos.update()
+            self.finish_0 = False
 
         # Room 1
         if self.current_room == 1:
@@ -486,6 +526,7 @@ class Game(arcade.View):
             self.physics_obstaculos.update()
             self.physics_obstaculos2.update()
             self.physics_perfeccionar.update()
+            self.finish_1 = False
 
         # Room 2
         if self.current_room == 2:
@@ -495,6 +536,7 @@ class Game(arcade.View):
             self.physics_perfeccionar.update()
             self.physics_sangre.update()
             self.physics_cuerpos.update()
+            self.finish_2 = False
 
         # Room 3
         if self.current_room == 3:
@@ -502,6 +544,7 @@ class Game(arcade.View):
             self.physics_sangre.update()
             self.physics_cuerpos.update()
             self.physics_obstaculos.update()
+            self.finish_3 = False
 
     def create_enemies(self):
         if self.start:
@@ -571,10 +614,10 @@ class Game(arcade.View):
 
                     if foe_choice == 0:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                                      1, pos_x, pos_y, 1, 2)
+                                      1, pos_x, pos_y, 1, 1)
                     elif foe_choice == 1:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                                      1, pos_x, pos_y, 2, 3)
+                                      1, pos_x, pos_y, 2, 1)
                     elif foe_choice == 2:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
                                       1, pos_x, pos_y, 4, 1)
@@ -600,12 +643,13 @@ class Game(arcade.View):
         if 10 <= self.time_quotient <= 40:
             if self.spawn_cd % 240 == 0:
                 self.create_enemies()
-        if 10 <= self.time_quotient:
+        if 10 >= self.time_quotient:
             if self.spawn_cd % 180 == 0:
                 self.create_enemies()
         if self.time_quotient < 0:
             self.max_enemies = 0
             self.start = False
+            self.time = 60
 
     def shoot(self, direction):
 
@@ -765,10 +809,10 @@ class Game(arcade.View):
         arcade.draw_text(f"Time wave: {self.time_quotient}", 400, 10, arcade.color.WHITE, 25)
 
         # draw all sprites
+        self.bomb_list.draw()
         self.player_list.draw()
         self.weapon_list.draw()
         self.bullet_list.draw()
-        self.bomb_list.draw()
         self.enemy_list.draw()
 
     def on_key_press(self, key, modifiers):
