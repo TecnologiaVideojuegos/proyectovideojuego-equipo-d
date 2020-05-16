@@ -7,6 +7,7 @@ screen_height = 640
 screen_title = "VIR-ED"
 sprite_scaling = 1
 
+
 absolute = os.path.abspath(__file__)
 path1 = os.path.dirname(absolute)
 path2 = os.path.dirname(path1)
@@ -60,7 +61,60 @@ class MainCharacter(Character):
         self.shooting_left = None
         self.shooting_up = None
         self.shooting_down = None
-        
+
+        # cargar texturas
+
+        self.current_texture = 0
+        self.left_facing = arcade.load_texture(sprites_folder + os.path.sep + "prota izq.png")
+        self.right_facing = arcade.load_texture(sprites_folder + os.path.sep + "protagonista.png")
+        self.up_facing = arcade.load_texture(sprites_folder + os.path.sep + "prota esp.png")
+        self.walk_right_textures = []
+        self.walk_left_textures = []
+        self.walk_up_textures = []
+        self.walk_down_textures = []
+        self.walk_right_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota dcha anda.png"))
+        self.walk_right_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota dcha anda2.png"))
+        self.walk_left_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota izq anda.png"))
+        self.walk_left_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota izq anda2 .png"))
+        self.walk_up_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota esp anda.png"))
+        self.walk_up_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota esp anda2.png"))
+
+    def update_animation(self, delta_time: float = 1/60):
+
+        # si el jugador esta parado
+        if not self.go_up and not self.go_down and not self.go_right and not self.go_left:
+            self.texture = self.right_facing
+
+        # animaciones caminar
+        else:
+            texture_list = []
+            if self.go_up:
+                texture_list = self.walk_up_textures
+            elif self.go_down:
+                pass
+            elif self.go_right:
+                texture_list = self.walk_right_textures
+            elif self.go_left:
+                texture_list = self.walk_left_textures
+
+            self.current_texture += 1
+
+            if len(texture_list) > 0:
+                if self.current_texture >= len(texture_list):
+                    self.current_texture = 0
+
+                self.texture = texture_list[self.current_texture]
+
+        # apuntar
+        if self.shooting_left:
+            self.texture = self.left_facing
+        elif self.shooting_right:
+            self.texture = self.right_facing
+        elif self.shooting_up:
+            self.texture = self.up_facing
+        elif self.shooting_down:
+            pass
+
     def respawn(self):
 
         self.center_x = screen_width // 2
@@ -175,7 +229,7 @@ class Menu(arcade.View):
         self.window.show_view(game_view)
 
 
-class GameOverView(arcade.View):
+class GameOver(arcade.View):
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
 
@@ -183,13 +237,17 @@ class GameOverView(arcade.View):
         arcade.start_render()
         arcade.draw_text("Game Over", screen_width // 2, screen_height // 2,
                          arcade.color.WHITE, 30, anchor_x="center")
-        arcade.draw_text("Pulsa escape para volver al menu", screen_width // 2, screen_height // 3,
+        arcade.draw_text("Esc - Menu\n\nR - Reiniciar", screen_width // 2, screen_height // 3,
                          arcade.color.WHITE, font_size=30, anchor_x="center")
 
     def on_key_press(self, key, _modifiers):
         if key == arcade.key.ESCAPE:
             menu_view = Menu()
             self.window.show_view(menu_view)
+        if key == arcade.key.R:
+            game_view = Game()
+            game_view.setup()
+            self.window.show_view(game_view)
 
 
 class Game(arcade.View):
@@ -695,7 +753,7 @@ class Game(arcade.View):
             if arcade.check_for_collision(self.player_sprite, enemy):
                 self.player_sprite.respawn()
                 arcade.pause(1)
-                game_over = GameOverView()
+                game_over = GameOver()
                 self.window.show_view(game_over)
 
             # enemies physics
@@ -762,7 +820,6 @@ class Game(arcade.View):
 
         # shooting
         if self.cd % 30 == 0:
-
             if self.player_sprite.shooting_right and self.player_sprite.shooting_up:
                 self.shoot("right_up")
             elif self.player_sprite.shooting_left and self.player_sprite.shooting_up:
@@ -790,6 +847,7 @@ class Game(arcade.View):
         # update everything
         self.collision()
         self.player_list.update()
+        self.player_list.update_animation()
         self.bullet_list.update()
         self.enemy_list.update()
         self.bomb_list.update()
