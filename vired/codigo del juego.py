@@ -717,9 +717,9 @@ class Game(arcade.View):
     def shoot(self, direction):
 
         # create bullet sprite
-        if self.current_room == 0:
-            bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", sprite_scaling / 2)
-            self.bullet_list.append(bullet)
+        """if self.current_room == 0:"""
+        bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", sprite_scaling / 2)
+        self.bullet_list.append(bullet)
 
         """if self.current_room == 1:
             bullet = Bullet(bullet_folder + os.path.sep + "gota2.png", sprite_scaling / 2)
