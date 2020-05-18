@@ -7,7 +7,6 @@ screen_height = 640
 screen_title = "VIR-ED"
 sprite_scaling = 1
 
-
 absolute = os.path.abspath(__file__)
 path1 = os.path.dirname(absolute)
 path2 = os.path.dirname(path1)
@@ -79,7 +78,7 @@ class MainCharacter(Character):
         self.walk_up_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota esp anda.png"))
         self.walk_up_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota esp anda2.png"))
 
-    def update_animation(self, delta_time: float = 1/60):
+    def update_animation(self, delta_time: float = 1 / 60):
 
         # si el jugador esta parado
         if not self.go_up and not self.go_down and not self.go_right and not self.go_left:
@@ -349,12 +348,6 @@ class Game(arcade.View):
                                            3, 200)
         self.player_list.append(self.player_sprite)
 
-        # Weapon
-        self.weapon = arcade.Sprite(bullet_folder + os.path.sep + "jeringa1.png", sprite_scaling/1.5, center_x=self.player_sprite.center_x + 15
-                                    , center_y=self.player_sprite.center_y - 5)
-        self.weapon.angle = 90
-        self.weapon_list.append(self.weapon)
-
         # The entrances is the first room
         self.entrance()
 
@@ -381,10 +374,11 @@ class Game(arcade.View):
 
         # bomb
         if self.finish_0:
-            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320, center_y=320)
+            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320,
+                                      center_y=320)
             self.bomb_list.append(self.bomb)
 
-        if len(self.bomb_list)!=0 and not self.finish_0:
+        if len(self.bomb_list) != 0 and not self.finish_0:
             self.bomb.kill()
 
         # physics layers and player
@@ -394,6 +388,8 @@ class Game(arcade.View):
 
         # enemies
         self.create_enemies()
+        self.create_weapon(bullet_folder + os.path.sep + "jeringa1.png", self.player_sprite.center_x + 15
+                           , self.player_sprite.center_y - 5, 90)
 
     def room_1(self):
         # load map
@@ -409,10 +405,11 @@ class Game(arcade.View):
 
         # bomb
         if self.finish_1:
-            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320, center_y=320)
+            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320,
+                                      center_y=320)
             self.bomb_list.append(self.bomb)
 
-        if len(self.bomb_list)!=0 and not self.finish_1:
+        if len(self.bomb_list) != 0 and not self.finish_1:
             self.bomb.kill()
 
         # physics layers and player
@@ -440,9 +437,10 @@ class Game(arcade.View):
 
         # bomb
         if self.finish_2:
-            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320, center_y=320)
+            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320,
+                                      center_y=320)
             self.bomb_list.append(self.bomb)
-        if len(self.bomb_list)!=0 and not self.finish_2:
+        if len(self.bomb_list) != 0 and not self.finish_2:
             self.bomb.kill()
 
         # physics layers and player
@@ -470,10 +468,11 @@ class Game(arcade.View):
 
         # bomb
         if self.finish_3:
-            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320, center_y=320)
+            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320,
+                                      center_y=320)
             self.bomb_list.append(self.bomb)
 
-        if len(self.bomb_list)!=0 and not self.finish_2:
+        if len(self.bomb_list) != 0 and not self.finish_2:
             self.bomb.kill()
 
         # physics layers and player
@@ -682,6 +681,12 @@ class Game(arcade.View):
 
                     self.enemy_list.append(enemy)
 
+    def create_weapon(self, weapon, pos_x, pos_y, angle):
+        # Weapon
+        self.weapon = arcade.Sprite(weapon, sprite_scaling / 1.5, center_x=pos_x, center_y=pos_y)
+        self.weapon.angle = angle
+        self.weapon_list.append(self.weapon)
+
     def movimiento(self, enemy, player):
 
         # Movement
@@ -712,39 +717,99 @@ class Game(arcade.View):
     def shoot(self, direction):
 
         # create bullet sprite
-        bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", sprite_scaling / 2)
-        bullet.center_x = self.weapon.center_x + 10
-        bullet.center_y = self.weapon.center_y + 1
-        self.bullet_list.append(bullet)
+        if self.current_room == 0:
+            bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", sprite_scaling / 2)
+            self.bullet_list.append(bullet)
+
+        """if self.current_room == 1:
+            bullet = Bullet(bullet_folder + os.path.sep + "gota2.png", sprite_scaling / 2)
+            self.bullet_list.append(bullet)"""
 
         if direction == "right":
+            bullet.center_x = self.weapon.center_x + 10
+            bullet.center_y = self.weapon.center_y + 1
             bullet.change_x = bullet.speed
             bullet.angle = 90
         if direction == "left":
+            bullet.center_x = self.weapon.center_x - 10
+            bullet.center_y = self.weapon.center_y
             bullet.change_x = -bullet.speed
             bullet.angle = 270
         if direction == "up":
+            bullet.center_x = self.weapon.center_x
+            bullet.center_y = self.weapon.center_y + 10
             bullet.change_y = bullet.speed
             bullet.angle = 180
         if direction == "down":
+            bullet.center_x = self.weapon.center_x
+            bullet.center_y = self.weapon.center_y - 10
             bullet.change_y = -bullet.speed
             bullet.angle = 0
         if direction == "right_up":
+            bullet.center_x = self.weapon.center_x + 10
+            bullet.center_y = self.weapon.center_y + 10
             bullet.change_x = bullet.speed
             bullet.change_y = bullet.speed
             bullet.angle = 135
         if direction == "right_down":
+            bullet.center_x = self.weapon.center_x + 10
+            bullet.center_y = self.weapon.center_y - 10
             bullet.change_x = bullet.speed
             bullet.change_y = -bullet.speed
             bullet.angle = 45
         if direction == "left_up":
+            bullet.center_x = self.weapon.center_x - 10
+            bullet.center_y = self.weapon.center_y + 10
             bullet.change_x = -bullet.speed
             bullet.change_y = bullet.speed
             bullet.angle = 225
         if direction == "left_down":
+            bullet.center_x = self.weapon.center_x - 10
+            bullet.center_y = self.weapon.center_y - 10
             bullet.change_x = -bullet.speed
             bullet.change_y = -bullet.speed
             bullet.angle = 315
+
+    def update_weapon(self):
+        if self.player_sprite.shooting_right or (self.player_sprite.change_x == 0 and self.player_sprite.change_y == 0):
+            self.weapon.center_x = self.player_sprite.center_x + 15
+            self.weapon.center_y = self.player_sprite.center_y - 5
+            self.weapon.angle = 90
+
+        if self.player_sprite.shooting_left:
+            self.weapon.center_x = self.player_sprite.center_x - 13
+            self.weapon.center_y = self.player_sprite.center_y - 4
+            self.weapon.angle = 270
+
+        if self.player_sprite.shooting_down:
+            self.weapon.center_x = self.player_sprite.center_x + 5
+            self.weapon.center_y = self.player_sprite.center_y - 12
+            self.weapon.angle = 0
+
+        if self.player_sprite.shooting_up:
+            self.weapon.center_x = self.player_sprite.center_x + 8
+            self.weapon.center_y = self.player_sprite.center_y + 5
+            self.weapon.angle = 180
+
+        if self.player_sprite.shooting_down and self.player_sprite.shooting_left:
+            self.weapon.center_x = self.player_sprite.center_x - 15
+            self.weapon.center_y = self.player_sprite.center_y - 8
+            self.weapon.angle = 315
+
+        if self.player_sprite.shooting_down and self.player_sprite.shooting_right:
+            self.weapon.center_x = self.player_sprite.center_x + 12
+            self.weapon.center_y = self.player_sprite.center_y - 10
+            self.weapon.angle = 45
+
+        if self.player_sprite.shooting_up and self.player_sprite.shooting_left:
+            self.weapon.center_x = self.player_sprite.center_x - 13
+            self.weapon.center_y = self.player_sprite.center_y + 4
+            self.weapon.angle = 225
+
+        if self.player_sprite.shooting_up and self.player_sprite.shooting_right:
+            self.weapon.center_x = self.player_sprite.center_x + 15
+            self.weapon.center_y = self.player_sprite.center_y + 3
+            self.weapon.angle = 135
 
     def collision(self):
         # collision enemy-player, enemy-enemy and death
@@ -780,12 +845,6 @@ class Game(arcade.View):
                     enemy.remove_from_sprite_lists()
                     self.score += 1
 
-        # weapon physics
-        if -15.01 <= self.player_sprite.center_x - self.weapon.center_x or -14.98 >= self.player_sprite.center_x - self.weapon.center_x:
-            self.weapon.center_x = self.player_sprite.center_x + 15
-        if 4.99 <= self.player_sprite.center_y - self.weapon.center_y or 5.01 >= self.player_sprite.center_y - self.weapon.center_y:
-            self.weapon.center_y = self.player_sprite.center_y - 5
-
         start_the_wave = arcade.check_for_collision_with_list(self.player_sprite, self.bomb_list)
         if start_the_wave and self.space:
             self.bomb.kill()
@@ -799,7 +858,7 @@ class Game(arcade.View):
         self.spawn_cd += 1
         if self.start:
             self.time -= delta_time
-        self.time_quotient = self.time//1
+        self.time_quotient = self.time // 1
 
         # Room updates
         self.room_update()
@@ -844,6 +903,9 @@ class Game(arcade.View):
         for enemy in self.enemy_list:
             self.movimiento(enemy, self.player_sprite)
 
+        for self.weapon in self.weapon_list:
+            self.update_weapon()
+
         # update everything
         self.collision()
         self.player_list.update()
@@ -868,8 +930,8 @@ class Game(arcade.View):
 
         # draw all sprites
         self.bomb_list.draw()
-        self.player_list.draw()
         self.weapon_list.draw()
+        self.player_list.draw()
         self.bullet_list.draw()
         self.enemy_list.draw()
 
