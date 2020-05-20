@@ -252,7 +252,6 @@ class GameOver(arcade.View):
 class Game(arcade.View):
     def __init__(self):
         super().__init__()
-
         # lists
         self.player_list = None
         self.bullet_list = None
@@ -319,11 +318,23 @@ class Game(arcade.View):
         self.finish_2 = True
         self.finish_3 = True
 
+        # PowerUps
+        self.powerUpAguja = None
+        self.powerUpListAguja = None
+        self.powerUpTriple = None
+        self.powerUpListTriple = None
+        self.powerUpLejia = None
+        self.powerUpListLejia = None
+        self.triple = False
+        self.cd_triple = None
+        self.dissapear = True
+        self.cd_dissapear = None
+        self.legia = False
+
     def setup(self):
         """
         Set up the game and initialize the variables. Call this function to restart the game
         """
-
         # Set up the lists
         self.player_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
@@ -343,6 +354,10 @@ class Game(arcade.View):
         self.physics_sangre = arcade.SpriteList()
         self.bomb_list = arcade.SpriteList()
 
+        self.powerUpListAguja = arcade.SpriteList()
+        self.powerUpListTriple = arcade.SpriteList()
+        self.powerUpListLejia = arcade.SpriteList()
+
         # Set up the player
         self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling,
                                            3, 200)
@@ -359,6 +374,8 @@ class Game(arcade.View):
         self.score = 0
         self.time = 60
         self.spawn_cd = 0
+        self.cd_dissapear = 0
+        self.cd_triple = 0
 
     # Rooms created
     def entrance(self):
@@ -681,13 +698,7 @@ class Game(arcade.View):
 
                     self.enemy_list.append(enemy)
 
-    def create_weapon(self, weapon, pos_x, pos_y, angle):
-        # Weapon
-        self.weapon = arcade.Sprite(weapon, sprite_scaling / 1.5, center_x=pos_x, center_y=pos_y)
-        self.weapon.angle = angle
-        self.weapon_list.append(self.weapon)
-
-    def movimiento(self, enemy, player):
+    def movement_enemy(self, enemy, player):
 
         # Movement
         if enemy.center_x < player.center_x:
@@ -699,76 +710,11 @@ class Game(arcade.View):
         if enemy.center_y > player.center_y:
             enemy.center_y -= enemy.speed
 
-    def waves(self):
-        if 40 <= self.time_quotient <= 59:
-            if self.spawn_cd % 300 == 0:
-                self.create_enemies()
-        if 10 <= self.time_quotient <= 40:
-            if self.spawn_cd % 240 == 0:
-                self.create_enemies()
-        if 10 >= self.time_quotient:
-            if self.spawn_cd % 180 == 0:
-                self.create_enemies()
-        if self.time_quotient < 0:
-            self.max_enemies = 0
-            self.start = False
-            self.time = 60
-
-    def shoot(self, direction):
-
-        # create bullet sprite
-        """if self.current_room == 0:"""
-        bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", sprite_scaling / 2)
-        self.bullet_list.append(bullet)
-
-        """if self.current_room == 1:
-            bullet = Bullet(bullet_folder + os.path.sep + "gota2.png", sprite_scaling / 2)
-            self.bullet_list.append(bullet)"""
-
-        if direction == "right":
-            bullet.center_x = self.weapon.center_x + 10
-            bullet.center_y = self.weapon.center_y + 1
-            bullet.change_x = bullet.speed
-            bullet.angle = 90
-        if direction == "left":
-            bullet.center_x = self.weapon.center_x - 10
-            bullet.center_y = self.weapon.center_y
-            bullet.change_x = -bullet.speed
-            bullet.angle = 270
-        if direction == "up":
-            bullet.center_x = self.weapon.center_x
-            bullet.center_y = self.weapon.center_y + 10
-            bullet.change_y = bullet.speed
-            bullet.angle = 180
-        if direction == "down":
-            bullet.center_x = self.weapon.center_x
-            bullet.center_y = self.weapon.center_y - 10
-            bullet.change_y = -bullet.speed
-            bullet.angle = 0
-        if direction == "right_up":
-            bullet.center_x = self.weapon.center_x + 10
-            bullet.center_y = self.weapon.center_y + 10
-            bullet.change_x = bullet.speed
-            bullet.change_y = bullet.speed
-            bullet.angle = 135
-        if direction == "right_down":
-            bullet.center_x = self.weapon.center_x + 10
-            bullet.center_y = self.weapon.center_y - 10
-            bullet.change_x = bullet.speed
-            bullet.change_y = -bullet.speed
-            bullet.angle = 45
-        if direction == "left_up":
-            bullet.center_x = self.weapon.center_x - 10
-            bullet.center_y = self.weapon.center_y + 10
-            bullet.change_x = -bullet.speed
-            bullet.change_y = bullet.speed
-            bullet.angle = 225
-        if direction == "left_down":
-            bullet.center_x = self.weapon.center_x - 10
-            bullet.center_y = self.weapon.center_y - 10
-            bullet.change_x = -bullet.speed
-            bullet.change_y = -bullet.speed
-            bullet.angle = 315
+    def create_weapon(self, weapon, pos_x, pos_y, angle):
+        # Weapon
+        self.weapon = arcade.Sprite(weapon, sprite_scaling / 1.5, center_x=pos_x, center_y=pos_y)
+        self.weapon.angle = angle
+        self.weapon_list.append(self.weapon)
 
     def update_weapon(self):
         if self.player_sprite.shooting_right or (self.player_sprite.change_x == 0 and self.player_sprite.change_y == 0):
@@ -811,58 +757,7 @@ class Game(arcade.View):
             self.weapon.center_y = self.player_sprite.center_y + 3
             self.weapon.angle = 135
 
-    def collision(self):
-        # collision enemy-player, enemy-enemy and death
-        for enemy in self.enemy_list:
-            # game over if player is hit
-            if arcade.check_for_collision(self.player_sprite, enemy):
-                self.player_sprite.respawn()
-                arcade.pause(1)
-                game_over = GameOver()
-                self.window.show_view(game_over)
-
-            # enemies physics
-            self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
-            for i in range(len(self.collision_enemy)):
-                self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
-
-            # bullet disappears, not creation of enemies and the stop
-            if self.movement:
-                enemy.speed = 0
-                self.max_enemies = len(self.enemy_list)
-                for bullet in self.bullet_list:
-                    bullet.kill()
-
-        # collisions bullet - enemy
-        for bullet in self.bullet_list:
-            collision_bullet_enemy = arcade.check_for_collision_with_list(bullet, self.enemy_list)
-            # enemy actualization of hearts
-            for enemy in collision_bullet_enemy:
-                bullet.remove_from_sprite_lists()
-                if enemy.number_of_hearts > 0:
-                    enemy.number_of_hearts -= 1
-                if enemy.number_of_hearts == 0:
-                    enemy.remove_from_sprite_lists()
-                    self.score += 1
-
-        start_the_wave = arcade.check_for_collision_with_list(self.player_sprite, self.bomb_list)
-        if start_the_wave and self.space:
-            self.bomb.kill()
-            self.start = True
-
-    def on_update(self, delta_time):
-        """ Movement and game logic """  # collisions go here
-
-        # Counters
-        self.cd += 2
-        self.spawn_cd += 1
-        if self.start:
-            self.time -= delta_time
-        self.time_quotient = self.time // 1
-
-        # Room updates
-        self.room_update()
-
+    def movement_shoot_player(self, delta_time):
         # main character and weapon movement
         if self.player_sprite.go_right:
             self.player_sprite.center_x += self.player_sprite.speed * delta_time
@@ -880,40 +775,269 @@ class Game(arcade.View):
         # shooting
         if self.cd % 30 == 0:
             if self.player_sprite.shooting_right and self.player_sprite.shooting_up:
-                self.shoot("right_up")
+                self.shoot("right_up", None)
             elif self.player_sprite.shooting_left and self.player_sprite.shooting_up:
-                self.shoot("left_up")
+                self.shoot("left_up", None)
             elif self.player_sprite.shooting_right and self.player_sprite.shooting_down:
-                self.shoot("right_down")
+                self.shoot("right_down", None)
             elif self.player_sprite.shooting_left and self.player_sprite.shooting_down:
-                self.shoot("left_down")
+                self.shoot("left_down", None)
             elif self.player_sprite.shooting_right:
-                self.shoot("right")
+                self.shoot("right", None)
             elif self.player_sprite.shooting_up:
-                self.shoot("up")
+                self.shoot("up", None)
             elif self.player_sprite.shooting_left:
-                self.shoot("left")
+                self.shoot("left", None)
             elif self.player_sprite.shooting_down:
-                self.shoot("down")
+                self.shoot("down", None)
+
+    def waves(self):
+        if 40 <= self.time_quotient <= 59:
+            if self.spawn_cd % 190 == 0:
+                self.create_enemies()
+        if 10 <= self.time_quotient <= 40:
+            if self.spawn_cd % 160 == 0:
+                self.create_enemies()
+        if 10 >= self.time_quotient:
+            if self.spawn_cd % 130 == 0:
+                self.create_enemies()
+        if self.time_quotient < 0:
+            self.max_enemies = 0
+            self.start = False
+            self.time = 60
+
+    def shoot(self, direction, dir):
+
+        # create bullet sprite
+        """if self.current_room == 0:"""
+        bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", sprite_scaling / 2)
+        self.bullet_list.append(bullet)
+
+        """if self.current_room == 1:
+            bullet = Bullet(bullet_folder + os.path.sep + "gota2.png", sprite_scaling / 2)
+            self.bullet_list.append(bullet)"""
+
+        if direction == "right":
+            bullet.center_x = self.weapon.center_x + 10
+            bullet.center_y = self.weapon.center_y + 1
+            bullet.change_x = bullet.speed
+            bullet.angle = 90
+            if dir is None:
+                dir = "right"
+                if self.triple and dir == "right":
+                    self.shoot("right_down", "right")
+                    self.shoot("right_up", "right")
+        if direction == "left":
+            bullet.center_x = self.weapon.center_x - 10
+            bullet.center_y = self.weapon.center_y
+            bullet.change_x = -bullet.speed
+            bullet.angle = 270
+            if dir is None:
+                dir = "left"
+                if self.triple and dir == "left":
+                    self.shoot("left_down", "left")
+                    self.shoot("left_up", "left")
+        if direction == "up":
+            bullet.center_x = self.weapon.center_x
+            bullet.center_y = self.weapon.center_y + 10
+            bullet.change_y = bullet.speed
+            bullet.angle = 180
+            if dir is None:
+                dir = "up"
+                if self.triple and dir == "up":
+                    self.shoot("left_up", "up")
+                    self.shoot("right_up", "up")
+        if direction == "down":
+            bullet.center_x = self.weapon.center_x
+            bullet.center_y = self.weapon.center_y - 10
+            bullet.change_y = -bullet.speed
+            bullet.angle = 0
+            if dir is None:
+                dir = "down"
+                if self.triple and dir == "down":
+                    self.shoot("right_down", "down")
+                    self.shoot("left_down", "down")
+        if direction == "right_up":
+            bullet.center_x = self.weapon.center_x + 10
+            bullet.center_y = self.weapon.center_y + 10
+            bullet.change_x = bullet.speed
+            bullet.change_y = bullet.speed
+            bullet.angle = 135
+            if dir is None:
+                dir = "right_up"
+                if self.triple and dir == "right_up":
+                    self.shoot("right", "right_up")
+                    self.shoot("up", "right_up")
+        if direction == "right_down":
+            bullet.center_x = self.weapon.center_x + 10
+            bullet.center_y = self.weapon.center_y - 10
+            bullet.change_x = bullet.speed
+            bullet.change_y = -bullet.speed
+            bullet.angle = 45
+            if dir is None:
+                dir = "right_down"
+                if self.triple and dir == "right_down":
+                    self.shoot("down", "right_down")
+                    self.shoot("right", "right_down")
+        if direction == "left_up":
+            bullet.center_x = self.weapon.center_x - 10
+            bullet.center_y = self.weapon.center_y + 10
+            bullet.change_x = -bullet.speed
+            bullet.change_y = bullet.speed
+            bullet.angle = 225
+            if dir is None:
+                dir = "left_up"
+                if self.triple and dir == "left_up":
+                    self.shoot("left", "left_up")
+                    self.shoot("up", "left_up")
+        if direction == "left_down":
+            bullet.center_x = self.weapon.center_x - 10
+            bullet.center_y = self.weapon.center_y - 10
+            bullet.change_x = -bullet.speed
+            bullet.change_y = -bullet.speed
+            bullet.angle = 315
+            if dir is None:
+                dir = "left_down"
+                if self.triple and dir == "left_down":
+                    self.shoot("down", "left_down")
+                    self.shoot("left", "left_down")
+
+    def collision(self, delta_time):
+        # collision enemy-player, enemy-enemy and death
+        for enemy in self.enemy_list:
+            # enemy movement
+            self.movement_enemy(enemy, self.player_sprite)
+
+            # game over if player is hit
+            if arcade.check_for_collision(self.player_sprite, enemy):
+                self.player_sprite.respawn()
+                arcade.pause(1)
+                game_over = GameOver()
+                self.window.show_view(game_over)
+
+            # enemies physics
+            self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
+            for i in range(len(self.collision_enemy)):
+                self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
+
+            # bullet disappears, not creation of enemies and the stop
+            if self.movement:
+                enemy.speed = 0
+                self.max_enemies = len(self.enemy_list)
+                if self.dissapear:
+                    for bullet in self.bullet_list:
+                        bullet.kill()
+
+        # collisions bullet - enemy
+        for bullet in self.bullet_list:
+            collision_bullet_enemy = arcade.check_for_collision_with_list(bullet, self.enemy_list)
+            # enemy actualization of hearts
+            for enemy in collision_bullet_enemy:
+                # dissapear
+                if self.dissapear:
+                    bullet.remove_from_sprite_lists()
+                if enemy.number_of_hearts > 0:
+                    enemy.number_of_hearts -= 1
+                if enemy.number_of_hearts == 0:
+                    self.powerUps_drop(enemy, randint(0, 10))
+                    enemy.kill()
+                    self.score += 1
+
+        start_the_wave = arcade.check_for_collision_with_list(self.player_sprite, self.bomb_list)
+        if start_the_wave and self.space:
+            self.bomb.kill()
+            self.start = True
+
+        self.powerUps_update(delta_time)
+
+    def powerUps_drop(self, enemy, number):
+        if number == 0:
+            self.powerUpAguja = arcade.Sprite(powerups_folder + os.path.sep + "powerUpAguja.png",
+                                              center_x=enemy.center_x,
+                                              center_y=enemy.center_y)
+            self.powerUpListAguja.append(self.powerUpAguja)
+        if number == 1:
+            self.powerUpTriple = arcade.Sprite(powerups_folder + os.path.sep + "powerUpTriple.png",
+                                               center_x=enemy.center_x,
+                                               center_y=enemy.center_y)
+            self.powerUpListTriple.append(self.powerUpTriple)
+        if number == 2:
+            self.powerUpLejia = arcade.Sprite(powerups_folder + os.path.sep + "poweUpLejia.png",
+                                              center_x=enemy.center_x,
+                                              center_y=enemy.center_y)
+            self.powerUpListLejia.append(self.powerUpLejia)
+        if 3 <= number <= 20:
+            pass
+
+    def powerUps_update(self, delta_time):
+
+        # powerUp legia
+        for self.powerUpLejia in self.powerUpListLejia:
+            if arcade.check_for_collision_with_list(self.player_sprite, self.powerUpListLejia):
+                self.legia = True
+                self.powerUpLejia.kill()
+
+        if self.legia:
+            for enemy in self.enemy_list:
+                enemy.kill()
+                if len(self.enemy_list) == 0:
+                    self.legia = False
+
+        # powerUp triple disparo
+        for self.powerUpTriple in self.powerUpListTriple:
+            if arcade.check_for_collision_with_list(self.player_sprite, self.powerUpListTriple):
+                self.triple = True
+                self.powerUpTriple.kill()
+
+        if self.triple:
+            self.cd_triple += delta_time
+            if self.cd_triple > 6:
+                self.triple = False
+                self.cd_triple = 0
+
+        # powerUp agujas
+        for self.powerUpAguja in self.powerUpListAguja:
+            if arcade.check_for_collision_with_list(self.player_sprite, self.powerUpListAguja):
+                self.powerUpAguja.kill()
+                self.dissapear = False
+
+        if not self.dissapear:
+            self.cd_dissapear += delta_time
+            if self.cd_dissapear > 6:
+                self.dissapear = True
+                self.cd_dissapear = 0
+
+    def on_update(self, delta_time):
+        """ Movement and game logic """  # collisions go here
+
+        # Counters
+        self.cd += 2
+        self.spawn_cd += 1
+        if self.start:
+            self.time -= delta_time
+        self.time_quotient = self.time // 1
+
+        # Room updates
+        self.room_update()
 
         # waves
         self.waves()
-
-        # enemy movement
-        for enemy in self.enemy_list:
-            self.movimiento(enemy, self.player_sprite)
 
         for self.weapon in self.weapon_list:
             self.update_weapon()
 
         # update everything
-        self.collision()
+        self.movement_shoot_player(delta_time)
+        self.collision(delta_time)
         self.player_list.update()
         self.player_list.update_animation()
         self.bullet_list.update()
         self.enemy_list.update()
         self.bomb_list.update()
         self.physics_enemy_list.update()
+        self.powerUpListAguja.update()
+        self.powerUpListTriple.update()
+        self.powerUpListLejia.update()
 
     def on_draw(self):
         """
@@ -925,11 +1049,15 @@ class Game(arcade.View):
         # Room entrance
         self.room_draw()
 
+        # text
         arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
-        arcade.draw_text(f"Time wave: {self.time_quotient}", 400, 10, arcade.color.WHITE, 25)
+        # arcade.draw_text(f"Time wave: {self.time_quotient}", 400, 10, arcade.color.WHITE, 10)
 
         # draw all sprites
         self.bomb_list.draw()
+        self.powerUpListAguja.draw()
+        self.powerUpListTriple.draw()
+        self.powerUpListLejia.draw()
         self.weapon_list.draw()
         self.player_list.draw()
         self.bullet_list.draw()
@@ -951,25 +1079,25 @@ class Game(arcade.View):
         if key == arcade.key.RIGHT:
             if not self.player_sprite.shooting_left and (not self.player_sprite.shooting_up
                                                          and not self.player_sprite.shooting_down):
-                self.shoot("right")
+                self.shoot("right", None)
             self.player_sprite.shooting_right = True
             self.cd = 0
         if key == arcade.key.LEFT:
             if not self.player_sprite.shooting_right and (not self.player_sprite.shooting_up
                                                           and not self.player_sprite.shooting_down):
-                self.shoot("left")
+                self.shoot("left", None)
             self.player_sprite.shooting_left = True
             self.cd = 0
         if key == arcade.key.UP:
             if not self.player_sprite.shooting_left and (not self.player_sprite.shooting_right
                                                          and not self.player_sprite.shooting_down):
-                self.shoot("up")
+                self.shoot("up", None)
             self.player_sprite.shooting_up = True
             self.cd = 0
         if key == arcade.key.DOWN:
             if not self.player_sprite.shooting_left and (not self.player_sprite.shooting_up
                                                          and not self.player_sprite.shooting_right):
-                self.shoot("down")
+                self.shoot("down", None)
             self.player_sprite.shooting_down = True
             self.cd = 0
 
