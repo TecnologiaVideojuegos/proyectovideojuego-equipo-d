@@ -1,3 +1,5 @@
+import math
+
 import arcade
 from random import *
 import os.path
@@ -204,7 +206,7 @@ class Bullet(arcade.Sprite):
 
     def __init__(self, filename, sprite_scale):
         super().__init__(filename, sprite_scale)
-        self.speed = 5
+        self.speed = 6
 
     def update(self):
         self.center_x += self.change_x
@@ -909,8 +911,8 @@ class Game(arcade.View):
         if direction == "right_up":
             bullet.center_x = self.weapon.center_x + 10
             bullet.center_y = self.weapon.center_y + 10
-            bullet.change_x = bullet.speed
-            bullet.change_y = bullet.speed
+            bullet.change_x = bullet.speed / math.sqrt(2)
+            bullet.change_y = bullet.speed / math.sqrt(2)
             bullet.angle = 135
             if dir is None:
                 dir = "right_up"
@@ -920,8 +922,8 @@ class Game(arcade.View):
         if direction == "right_down":
             bullet.center_x = self.weapon.center_x + 10
             bullet.center_y = self.weapon.center_y - 10
-            bullet.change_x = bullet.speed
-            bullet.change_y = -bullet.speed
+            bullet.change_x = bullet.speed / math.sqrt(2)
+            bullet.change_y = -bullet.speed / math.sqrt(2)
             bullet.angle = 45
             if dir is None:
                 dir = "right_down"
@@ -931,8 +933,8 @@ class Game(arcade.View):
         if direction == "left_up":
             bullet.center_x = self.weapon.center_x - 10
             bullet.center_y = self.weapon.center_y + 10
-            bullet.change_x = -bullet.speed
-            bullet.change_y = bullet.speed
+            bullet.change_x = -bullet.speed / math.sqrt(2)
+            bullet.change_y = bullet.speed / math.sqrt(2)
             bullet.angle = 225
             if dir is None:
                 dir = "left_up"
@@ -942,8 +944,8 @@ class Game(arcade.View):
         if direction == "left_down":
             bullet.center_x = self.weapon.center_x - 10
             bullet.center_y = self.weapon.center_y - 10
-            bullet.change_x = -bullet.speed
-            bullet.change_y = -bullet.speed
+            bullet.change_x = -bullet.speed / math.sqrt(2)
+            bullet.change_y = -bullet.speed / math.sqrt(2)
             bullet.angle = 315
             if dir is None:
                 dir = "left_down"
@@ -979,12 +981,14 @@ class Game(arcade.View):
 
         # collisions bullet - enemy
         for bullet in self.bullet_list:
+            if arcade.check_for_collision_with_list(bullet, self.paredes):
+                bullet.kill()
             collision_bullet_enemy = arcade.check_for_collision_with_list(bullet, self.enemy_list)
             # enemy actualization of hearts
             for enemy in collision_bullet_enemy:
                 # dissapear
                 if self.dissapear:
-                    bullet.remove_from_sprite_lists()
+                    bullet.kill()
                 if enemy.number_of_hearts > 0:
                     enemy.number_of_hearts -= 1
                 if enemy.number_of_hearts == 0:
