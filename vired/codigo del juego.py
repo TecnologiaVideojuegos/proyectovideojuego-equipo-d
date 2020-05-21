@@ -309,14 +309,19 @@ class Game(arcade.View):
         self.spawn_cd = None
         self.time = None
         self.time_quotient = None
+        self.money = None
 
         self.start = False
         self.space = False
 
-        self.finish_0 = True
-        self.finish_1 = True
-        self.finish_2 = True
-        self.finish_3 = True
+        self.finish_0 = False
+        self.finish_1 = False
+        self.finish_2 = False
+        self.finish_3 = False
+        self.enemy_death = False
+
+        self.shop = None
+        self.shop_list = None
 
         # PowerUps
         self.powerUpAguja = None
@@ -353,6 +358,7 @@ class Game(arcade.View):
         self.physics_cuerpos = arcade.SpriteList()
         self.physics_sangre = arcade.SpriteList()
         self.bomb_list = arcade.SpriteList()
+        self.shop_list = arcade.SpriteList()
 
         self.powerUpListAguja = arcade.SpriteList()
         self.powerUpListTriple = arcade.SpriteList()
@@ -376,6 +382,7 @@ class Game(arcade.View):
         self.spawn_cd = 0
         self.cd_dissapear = 0
         self.cd_triple = 0
+        self.money = 0
 
     # Rooms created
     def entrance(self):
@@ -390,12 +397,12 @@ class Game(arcade.View):
         self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
 
         # bomb
-        if self.finish_0:
+        if not self.finish_0:
             self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320,
                                       center_y=320)
             self.bomb_list.append(self.bomb)
 
-        if len(self.bomb_list) != 0 and not self.finish_0:
+        if len(self.bomb_list) != 0 and self.finish_0:
             self.bomb.kill()
 
         # physics layers and player
@@ -421,12 +428,12 @@ class Game(arcade.View):
         self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
 
         # bomb
-        if self.finish_1:
+        if not self.finish_1:
             self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320,
                                       center_y=320)
             self.bomb_list.append(self.bomb)
 
-        if len(self.bomb_list) != 0 and not self.finish_1:
+        if len(self.bomb_list) != 0 and self.finish_1:
             self.bomb.kill()
 
         # physics layers and player
@@ -453,11 +460,11 @@ class Game(arcade.View):
         self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
 
         # bomb
-        if self.finish_2:
+        if not self.finish_2:
             self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320,
                                       center_y=320)
             self.bomb_list.append(self.bomb)
-        if len(self.bomb_list) != 0 and not self.finish_2:
+        if len(self.bomb_list) != 0 and self.finish_2:
             self.bomb.kill()
 
         # physics layers and player
@@ -484,12 +491,12 @@ class Game(arcade.View):
         self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
 
         # bomb
-        if self.finish_3:
-            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=320,
+        if not self.finish_3:
+            self.bomb = arcade.Sprite(resources_folder + os.path.sep + "bombaAntivirus.png", 1, center_x=350,
                                       center_y=320)
             self.bomb_list.append(self.bomb)
 
-        if len(self.bomb_list) != 0 and not self.finish_2:
+        if len(self.bomb_list) != 0 and self.finish_3:
             self.bomb.kill()
 
         # physics layers and player
@@ -544,29 +551,41 @@ class Game(arcade.View):
 
         # map update
         # Entrance -> Room 1
-        if self.player_sprite.center_y > 630 and 326 < self.player_sprite.center_x < 376 and self.current_room == 0:
-            self.current_room = 1
-            self.room_1()
-            self.player_sprite.center_y = 620
-            self.player_sprite.center_x = 416
+        if self.player_sprite.center_y > 630 and 323 < self.player_sprite.center_x < 380 and self.current_room == 0:
+            if self.finish_0:
+                self.current_room = 1
+                self.room_1()
+                self.player_sprite.center_y = 620
+                self.player_sprite.center_x = 448
+                self.shop.kill()
+            if not self.finish_0:
+                self.player_sprite.center_y = 630
 
         # Room 1 -> Room 2
-        if self.player_sprite.center_y > 635 and 298 < self.player_sprite.center_x < 343 and self.current_room == 1:
-            self.current_room = 2
-            self.room_2()
-            self.player_sprite.center_y = 30
-            self.player_sprite.center_x = 288
+        if self.player_sprite.center_y > 635 and 258 < self.player_sprite.center_x < 316 and self.current_room == 1:
+            if self.finish_1:
+                self.current_room = 2
+                self.room_2()
+                self.player_sprite.center_y = 30
+                self.player_sprite.center_x = 288
+                self.shop.kill()
+            if not self.finish_1:
+                self.player_sprite.center_y = 635
 
         # Room 2 -> Room 3
-        if self.player_sprite.center_y > 635 and 256 < self.player_sprite.center_x < 320 and self.current_room == 2:
-            self.current_room = 3
-            self.room_3()
-            self.player_sprite.center_y = 30
-            self.player_sprite.center_x = 256
+        if self.player_sprite.center_y > 635 and 258 < self.player_sprite.center_x < 316 and self.current_room == 2:
+            if self.finish_2:
+                self.current_room = 3
+                self.room_3()
+                self.player_sprite.center_y = 30
+                self.player_sprite.center_x = 256
+                self.shop.kill()
+            if not self.finish_2:
+                self.player_sprite.center_y = 635
 
         # Going down stairs
         # Room 3 -> Room 2
-        if self.player_sprite.center_y < 10 and 224 < self.player_sprite.center_x < 288 and self.current_room == 3:
+        if self.player_sprite.center_y < 10 and 226 < self.player_sprite.center_x < 284 and self.current_room == 3:
             self.current_room = 2
             self.room_2()
             self.player_sprite.center_y = 620
@@ -577,22 +596,32 @@ class Game(arcade.View):
             self.current_room = 1
             self.room_1()
             self.player_sprite.center_y = 620
-            self.player_sprite.center_x = 320
+            self.player_sprite.center_x = 300
 
         # Room 1 -> Entrance
-        if self.player_sprite.center_y > 650 and 389 < self.player_sprite.center_x < 438 and self.current_room == 1:
+        if self.player_sprite.center_y > 640 and 418 < self.player_sprite.center_x < 476 and self.current_room == 1:
             self.current_room = 0
             self.entrance()
             self.player_sprite.center_y = 620
             self.player_sprite.center_x = 352
 
+        self.room_update_2()
+
+    def room_update_2(self):
         # update physics
         # Entrance
         if self.current_room == 0:
             self.physics_paredes.update()
             self.physics_cosas.update()
             self.physics_obstaculos.update()
-            self.finish_0 = False
+            if len(self.enemy_list) == 0 and self.enemy_death:
+                self.enemy_death = False
+                self.finish_0 = True
+                self.shop = arcade.Sprite(resources_folder + os.path.sep + "cartel tienda.png", 1, center_x=32,
+                                          center_y=305)
+                self.shop_list.append(self.shop)
+            if len(self.enemy_list) > 0:
+                self.finish_0 = False
 
         # Room 1
         if self.current_room == 1:
@@ -600,8 +629,14 @@ class Game(arcade.View):
             self.physics_obstaculos.update()
             self.physics_obstaculos2.update()
             self.physics_perfeccionar.update()
-            self.finish_1 = False
-
+            if len(self.enemy_list) == 0 and self.enemy_death:
+                self.enemy_death = False
+                self.finish_1 = True
+                self.shop = arcade.Sprite(resources_folder + os.path.sep + "cartel tienda.png", 1, center_x=32,
+                                          center_y=305)
+                self.shop_list.append(self.shop)
+            if len(self.enemy_list) > 0:
+                self.finish_1 = False
         # Room 2
         if self.current_room == 2:
             self.physics_paredes.update()
@@ -610,15 +645,28 @@ class Game(arcade.View):
             self.physics_perfeccionar.update()
             self.physics_sangre.update()
             self.physics_cuerpos.update()
-            self.finish_2 = False
-
+            if len(self.enemy_list) == 0 and self.enemy_death:
+                self.enemy_death = False
+                self.finish_2 = True
+                self.shop = arcade.Sprite(resources_folder + os.path.sep + "cartel tienda.png", 1, center_x=32,
+                                          center_y=400)
+                self.shop_list.append(self.shop)
+            if len(self.enemy_list) > 0:
+                self.finish_2 = False
         # Room 3
         if self.current_room == 3:
             self.physics_paredes.update()
             self.physics_sangre.update()
             self.physics_cuerpos.update()
             self.physics_obstaculos.update()
-            self.finish_3 = False
+            if len(self.enemy_list) == 0 and self.enemy_death:
+                self.enemy_death = False
+                self.finish_3 = True
+                self.shop = arcade.Sprite(resources_folder + os.path.sep + "cartel tienda.png", 1, center_x=32,
+                                          center_y=335)
+                self.shop_list.append(self.shop)
+            if len(self.enemy_list) > 0:
+                self.finish_3 = False
 
     def create_enemies(self):
         if self.start:
@@ -805,6 +853,7 @@ class Game(arcade.View):
             self.max_enemies = 0
             self.start = False
             self.time = 60
+            self.enemy_death = True
 
     def shoot(self, direction, dir):
 
@@ -941,6 +990,7 @@ class Game(arcade.View):
                 if enemy.number_of_hearts == 0:
                     self.powerUps_drop(enemy, randint(0, 10))
                     enemy.kill()
+                    self.money += randint(45, 55)
                     self.score += 1
 
         start_the_wave = arcade.check_for_collision_with_list(self.player_sprite, self.bomb_list)
@@ -1062,6 +1112,7 @@ class Game(arcade.View):
         self.player_list.draw()
         self.bullet_list.draw()
         self.enemy_list.draw()
+        self.shop_list.draw()
 
     def on_key_press(self, key, modifiers):
 
