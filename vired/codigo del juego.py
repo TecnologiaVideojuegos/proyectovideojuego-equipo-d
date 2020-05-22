@@ -29,22 +29,6 @@ class Character(arcade.Sprite):
         self.number_of_hearts = number_of_hearts
         self.dead = False
 
-    def get_number_of_hearts(self):
-        """
-        Devuelve el numero de corazones o "vidas" del personaje
-        None -> int
-        """
-        return self.number_of_hearts
-
-    def sub_heart(self):  # los hits que aguantan los enemigos son como sus "vidas"
-        """
-        Quita un corazon del total de corazones
-        Int -> None
-        """
-        self.number_of_hearts -= 1
-        if self.number_of_hearts <= 0:
-            self.dead = True
-
 
 class MainCharacter(Character):
     def __init__(self, filename, scale, number_of_hearts, speed):  # muere de un golpe
@@ -80,8 +64,14 @@ class MainCharacter(Character):
         self.walk_up_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota esp anda.png"))
         self.walk_up_textures.append(arcade.load_texture(sprites_folder + os.path.sep + "prota esp anda2.png"))
 
-    def update_animation(self, delta_time: float = 1 / 60):
+    def respawn(self):
 
+        self.center_x = screen_width / 2
+        self.center_y = screen_height / 2
+
+    def update(self, delta_time: float = 1/60):
+
+        # animacion
         # si el jugador esta parado
         if not self.go_up and not self.go_down and not self.go_right and not self.go_left:
             self.texture = self.right_facing
@@ -116,10 +106,15 @@ class MainCharacter(Character):
         elif self.shooting_down:
             pass
 
-    def respawn(self):
-
-        self.center_x = screen_width // 2
-        self.center_y = screen_height // 2
+        # main character movement
+        if self.go_right:
+            self.center_x += self.speed * delta_time
+        if self.go_left:
+            self.center_x -= self.speed * delta_time
+        if self.go_up:
+            self.center_y += self.speed * delta_time
+        if self.go_down:
+            self.center_y -= self.speed * delta_time
 
     def get_money(self):
         """
@@ -139,13 +134,6 @@ class MainCharacter(Character):
         """
         self.speed = new_speed
 
-    def add_heart(self):
-        """
-        Suma un corazon al total de corazones
-        Int -> None
-        """
-        self.number_of_hearts += 1
-
 
 class Enemy(Character):
     def __init__(self, filename, scale, pos_x, pos_y, number_of_hearts, speed):
@@ -153,6 +141,18 @@ class Enemy(Character):
         self.center_x = pos_x
         self.center_y = pos_y
         self.drop_list = []  # items, todavía por definir, lista de objetos (clase)
+
+    def movement(self, player):
+
+        # Movement
+        if self.center_x < player.center_x:
+            self.center_x += self.speed
+        if self.center_x > player.center_x:
+            self.center_x -= self.speed
+        if self.center_y < player.center_y:
+            self.center_y += self.speed
+        if self.center_y > player.center_y:
+            self.center_y -= self.speed
 
     def drop(self):
         """
@@ -167,27 +167,63 @@ class Item:
         self.price = price
 
 
-class Weapon(Item):
-    def __init__(self, name, price, dmg, weapon_type):
-        super().__init__(price)
-        self.dmg = dmg
-        self.name = name
-        self.powerUp_list = ["Caja de vacunas", "Lejía", "Aguja nueva"]
-        self.weapon_type = weapon_type
+class Weapon(arcade.Sprite):
+    def __init__(self, weapon, pos_x, pos_y, angle):
+        super().__init__(weapon)
+        self.sprite_scale = sprite_scaling / 1.5
+        self.center_x = pos_x
+        self.center_y = pos_y
+        self.angle = angle
 
-    def has_power_up(self):
-        """
-        Checkea si un arma tiene powerUp
-        String -> boolean
-        """
-        pass
+    def update_self(self, player_sprite, delta_time):
+        if player_sprite.shooting_right or (player_sprite.change_x == 0 and player_sprite.change_y == 0):
+            self.center_x = player_sprite.center_x + 15
+            self.center_y = player_sprite.center_y - 5
+            self.angle = 90
 
-    def apply_power_up(self, power_up):
-        """
-        Aplica powerUp a arma
-        String -> None
-        """
-        pass
+        if player_sprite.shooting_left:
+            self.center_x = player_sprite.center_x - 13
+            self.center_y = player_sprite.center_y - 4
+            self.angle = 270
+
+        if player_sprite.shooting_down:
+            self.center_x = player_sprite.center_x + 5
+            self.center_y = player_sprite.center_y - 12
+            self.angle = 0
+
+        if player_sprite.shooting_up:
+            self.center_x = player_sprite.center_x + 8
+            self.center_y = player_sprite.center_y + 5
+            self.angle = 180
+
+        if player_sprite.shooting_down and player_sprite.shooting_left:
+            self.center_x = player_sprite.center_x - 15
+            self.center_y = player_sprite.center_y - 8
+            self.angle = 315
+
+        if player_sprite.shooting_down and player_sprite.shooting_right:
+            self.center_x = player_sprite.center_x + 12
+            self.center_y = player_sprite.center_y - 10
+            self.angle = 45
+
+        if player_sprite.shooting_up and player_sprite.shooting_left:
+            self.center_x = player_sprite.center_x - 13
+            self.center_y = player_sprite.center_y + 4
+            self.angle = 225
+
+        if player_sprite.shooting_up and player_sprite.shooting_right:
+            self.center_x = player_sprite.center_x + 15
+            self.center_y = player_sprite.center_y + 3
+            self.angle = 135
+
+        if player_sprite.go_right:
+            self.center_x += player_sprite.speed * delta_time
+        if player_sprite.go_left:
+            self.center_x -= player_sprite.speed * delta_time
+        if player_sprite.go_up:
+            self.center_y += player_sprite.speed * delta_time
+        if player_sprite.go_down:
+            self.center_y -= player_sprite.speed * delta_time
 
 
 class Consumable(Item):
@@ -306,7 +342,6 @@ class Game(arcade.View):
         self.movement = False
 
         # counters
-        self.cd = None
         self.score = None
         self.spawn_cd = None
         self.time = None
@@ -332,6 +367,7 @@ class Game(arcade.View):
         self.powerUpListTriple = None
         self.powerUpLejia = None
         self.powerUpListLejia = None
+        self.cd = None
         self.triple = False
         self.cd_triple = None
         self.dissapear = True
@@ -378,9 +414,9 @@ class Game(arcade.View):
         self.max_enemies = 10
 
         # Set up counters
-        self.cd = 0
         self.score = 0
         self.time = 60
+        self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
         self.cd_triple = 0
@@ -414,8 +450,9 @@ class Game(arcade.View):
 
         # enemies
         self.create_enemies()
-        self.create_weapon(bullet_folder + os.path.sep + "jeringa1.png", self.player_sprite.center_x + 15
-                           , self.player_sprite.center_y - 5, 90)
+        self.weapon = Weapon(bullet_folder + os.path.sep + "jeringa1.png", self.player_sprite.center_x + 15,
+                             self.player_sprite.center_y - 5, 90)
+        self.weapon_list.append(self.weapon)
 
     def room_1(self):
         # load map
@@ -748,99 +785,6 @@ class Game(arcade.View):
 
                     self.enemy_list.append(enemy)
 
-    def movement_enemy(self, enemy, player):
-
-        # Movement
-        if enemy.center_x < player.center_x:
-            enemy.center_x += enemy.speed
-        if enemy.center_x > player.center_x:
-            enemy.center_x -= enemy.speed
-        if enemy.center_y < player.center_y:
-            enemy.center_y += enemy.speed
-        if enemy.center_y > player.center_y:
-            enemy.center_y -= enemy.speed
-
-    def create_weapon(self, weapon, pos_x, pos_y, angle):
-        # Weapon
-        self.weapon = arcade.Sprite(weapon, sprite_scaling / 1.5, center_x=pos_x, center_y=pos_y)
-        self.weapon.angle = angle
-        self.weapon_list.append(self.weapon)
-
-    def update_weapon(self):
-        if self.player_sprite.shooting_right or (self.player_sprite.change_x == 0 and self.player_sprite.change_y == 0):
-            self.weapon.center_x = self.player_sprite.center_x + 15
-            self.weapon.center_y = self.player_sprite.center_y - 5
-            self.weapon.angle = 90
-
-        if self.player_sprite.shooting_left:
-            self.weapon.center_x = self.player_sprite.center_x - 13
-            self.weapon.center_y = self.player_sprite.center_y - 4
-            self.weapon.angle = 270
-
-        if self.player_sprite.shooting_down:
-            self.weapon.center_x = self.player_sprite.center_x + 5
-            self.weapon.center_y = self.player_sprite.center_y - 12
-            self.weapon.angle = 0
-
-        if self.player_sprite.shooting_up:
-            self.weapon.center_x = self.player_sprite.center_x + 8
-            self.weapon.center_y = self.player_sprite.center_y + 5
-            self.weapon.angle = 180
-
-        if self.player_sprite.shooting_down and self.player_sprite.shooting_left:
-            self.weapon.center_x = self.player_sprite.center_x - 15
-            self.weapon.center_y = self.player_sprite.center_y - 8
-            self.weapon.angle = 315
-
-        if self.player_sprite.shooting_down and self.player_sprite.shooting_right:
-            self.weapon.center_x = self.player_sprite.center_x + 12
-            self.weapon.center_y = self.player_sprite.center_y - 10
-            self.weapon.angle = 45
-
-        if self.player_sprite.shooting_up and self.player_sprite.shooting_left:
-            self.weapon.center_x = self.player_sprite.center_x - 13
-            self.weapon.center_y = self.player_sprite.center_y + 4
-            self.weapon.angle = 225
-
-        if self.player_sprite.shooting_up and self.player_sprite.shooting_right:
-            self.weapon.center_x = self.player_sprite.center_x + 15
-            self.weapon.center_y = self.player_sprite.center_y + 3
-            self.weapon.angle = 135
-
-    def movement_shoot_player(self, delta_time):
-        # main character and weapon movement
-        if self.player_sprite.go_right:
-            self.player_sprite.center_x += self.player_sprite.speed * delta_time
-            self.weapon.center_x += self.player_sprite.speed * delta_time
-        if self.player_sprite.go_left:
-            self.player_sprite.center_x -= self.player_sprite.speed * delta_time
-            self.weapon.center_x -= self.player_sprite.speed * delta_time
-        if self.player_sprite.go_up:
-            self.player_sprite.center_y += self.player_sprite.speed * delta_time
-            self.weapon.center_y += self.player_sprite.speed * delta_time
-        if self.player_sprite.go_down:
-            self.player_sprite.center_y -= self.player_sprite.speed * delta_time
-            self.weapon.center_y -= self.player_sprite.speed * delta_time
-
-        # shooting
-        if self.cd % 30 == 0:
-            if self.player_sprite.shooting_right and self.player_sprite.shooting_up:
-                self.shoot("right_up", None)
-            elif self.player_sprite.shooting_left and self.player_sprite.shooting_up:
-                self.shoot("left_up", None)
-            elif self.player_sprite.shooting_right and self.player_sprite.shooting_down:
-                self.shoot("right_down", None)
-            elif self.player_sprite.shooting_left and self.player_sprite.shooting_down:
-                self.shoot("left_down", None)
-            elif self.player_sprite.shooting_right:
-                self.shoot("right", None)
-            elif self.player_sprite.shooting_up:
-                self.shoot("up", None)
-            elif self.player_sprite.shooting_left:
-                self.shoot("left", None)
-            elif self.player_sprite.shooting_down:
-                self.shoot("down", None)
-
     def waves(self):
         if 40 <= self.time_quotient <= 59:
             if self.spawn_cd % 190 == 0:
@@ -954,17 +898,22 @@ class Game(arcade.View):
                     self.shoot("left", "left_down")
 
     def collision(self, delta_time):
+
         # collision enemy-player, enemy-enemy and death
         for enemy in self.enemy_list:
-            # enemy movement
-            self.movement_enemy(enemy, self.player_sprite)
-
             # game over if player is hit
             if arcade.check_for_collision(self.player_sprite, enemy):
+                self.player_sprite.number_of_hearts -= 1
+                self.legia = True
                 self.player_sprite.respawn()
-                arcade.pause(1)
-                game_over = GameOver()
-                self.window.show_view(game_over)
+                if self.player_sprite.number_of_hearts == 0:
+                    arcade.pause(1)
+                    game_over = GameOver()
+                    self.window.show_view(game_over)
+
+
+            # enemy movement
+            enemy.movement(self.player_sprite)
 
             # enemies physics
             self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
@@ -1061,11 +1010,33 @@ class Game(arcade.View):
                 self.dissapear = True
                 self.cd_dissapear = 0
 
+    def update_shooting(self, player_sprite):
+
+        # shooting
+        self.cd += 2
+
+        if self.cd % 30 == 0:
+            if player_sprite.shooting_right and player_sprite.shooting_up:
+                self.shoot("right_up", None)
+            elif player_sprite.shooting_left and player_sprite.shooting_up:
+                self.shoot("left_up", None)
+            elif player_sprite.shooting_right and player_sprite.shooting_down:
+                self.shoot("right_down", None)
+            elif player_sprite.shooting_left and player_sprite.shooting_down:
+                self.shoot("left_down", None)
+            elif player_sprite.shooting_right:
+                self.shoot("right", None)
+            elif player_sprite.shooting_up:
+                self.shoot("up", None)
+            elif player_sprite.shooting_left:
+                self.shoot("left", None)
+            elif player_sprite.shooting_down:
+                self.shoot("down", None)
+
     def on_update(self, delta_time):
         """ Movement and game logic """  # collisions go here
 
         # Counters
-        self.cd += 2
         self.spawn_cd += 1
         if self.start:
             self.time -= delta_time
@@ -1077,11 +1048,14 @@ class Game(arcade.View):
         # waves
         self.waves()
 
-        for self.weapon in self.weapon_list:
-            self.update_weapon()
+        # provisional
+        self.update_shooting(self.player_sprite)
+
+        for weapon in self.weapon_list:
+            weapon.update_self(self.player_sprite, delta_time)
 
         # update everything
-        self.movement_shoot_player(delta_time)
+
         self.collision(delta_time)
         self.player_list.update()
         self.player_list.update_animation()
@@ -1105,7 +1079,11 @@ class Game(arcade.View):
 
         # text
         arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
-        # arcade.draw_text(f"Time wave: {self.time_quotient}", 400, 10, arcade.color.WHITE, 10)
+        arcade.draw_text(f"Time wave: {int(self.time_quotient)}", 400, 615, arcade.color.WHITE, 15)
+        i = 0
+        for heart in range(self.player_sprite.number_of_hearts):
+            arcade.Sprite(sprites_folder + os.path.sep + "protagonista.png", 1, center_x=550 + i, center_y=30).draw()
+            i += 20
 
         # draw all sprites
         self.bomb_list.draw()
