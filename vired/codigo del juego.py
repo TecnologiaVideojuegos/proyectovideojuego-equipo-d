@@ -144,7 +144,6 @@ class Enemy(Character):
 
     def movement(self, player):
 
-        # Movement
         if self.center_x < player.center_x:
             self.center_x += self.speed
         if self.center_x > player.center_x:
@@ -160,6 +159,14 @@ class Enemy(Character):
         None -> String
         """
         return self.drop_list[randint(0, len(self.drop_list) - 1)]  # no tengo en cuenta droprate
+
+
+class Moneda(arcade.Sprite):
+    def __init__(self, sprite_moneda, valor, pos_x, pos_y):
+        super().__init__(sprite_moneda)
+        self.center_x = pos_x
+        self.center_y = pos_y
+        self.valor = valor
 
 
 class Item:
@@ -290,6 +297,7 @@ class GameOver(arcade.View):
 class Game(arcade.View):
     def __init__(self):
         super().__init__()
+
         # lists
         self.player_list = None
         self.bullet_list = None
@@ -298,6 +306,7 @@ class Game(arcade.View):
         self.weapon_list = None
         self.invisible_list = None
         self.bomb_list = None
+        self.lista_monedas = None
 
         # main character and bullet sprites
         self.player_sprite = None
@@ -360,6 +369,7 @@ class Game(arcade.View):
         self.shop = None
         self.shop_list = None
 
+
         # PowerUps
         self.powerUpAguja = None
         self.powerUpListAguja = None
@@ -401,6 +411,7 @@ class Game(arcade.View):
         self.powerUpListAguja = arcade.SpriteList()
         self.powerUpListTriple = arcade.SpriteList()
         self.powerUpListLejia = arcade.SpriteList()
+        self.lista_monedas = arcade.SpriteList()
 
         # Set up the player
         self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling,
@@ -897,6 +908,29 @@ class Game(arcade.View):
                     self.shoot("down", "left_down")
                     self.shoot("left", "left_down")
 
+    def update_shooting(self, player_sprite):
+
+        # shooting
+        self.cd += 2
+
+        if self.cd % 30 == 0:
+            if player_sprite.shooting_right and player_sprite.shooting_up:
+                self.shoot("right_up", None)
+            elif player_sprite.shooting_left and player_sprite.shooting_up:
+                self.shoot("left_up", None)
+            elif player_sprite.shooting_right and player_sprite.shooting_down:
+                self.shoot("right_down", None)
+            elif player_sprite.shooting_left and player_sprite.shooting_down:
+                self.shoot("left_down", None)
+            elif player_sprite.shooting_right:
+                self.shoot("right", None)
+            elif player_sprite.shooting_up:
+                self.shoot("up", None)
+            elif player_sprite.shooting_left:
+                self.shoot("left", None)
+            elif player_sprite.shooting_down:
+                self.shoot("down", None)
+
     def collision(self, delta_time):
 
         # collision enemy-player, enemy-enemy and death
@@ -904,13 +938,14 @@ class Game(arcade.View):
             # game over if player is hit
             if arcade.check_for_collision(self.player_sprite, enemy):
                 self.player_sprite.number_of_hearts -= 1
+                # borrado de todos los enemigos
                 self.legia = True
+                # vuelta al punto central de la pantalla
                 self.player_sprite.respawn()
                 if self.player_sprite.number_of_hearts == 0:
                     arcade.pause(1)
                     game_over = GameOver()
                     self.window.show_view(game_over)
-
 
             # enemy movement
             enemy.movement(self.player_sprite)
@@ -941,9 +976,8 @@ class Game(arcade.View):
                 if enemy.number_of_hearts > 0:
                     enemy.number_of_hearts -= 1
                 if enemy.number_of_hearts == 0:
-                    self.powerUps_drop(enemy, randint(0, 10))
+                    self.powerUps_drop(enemy, randint(0, 19))
                     enemy.kill()
-                    self.money += randint(45, 55)
                     self.score += 1
 
         start_the_wave = arcade.check_for_collision_with_list(self.player_sprite, self.bomb_list)
@@ -951,28 +985,38 @@ class Game(arcade.View):
             self.bomb.kill()
             self.start = True
 
-        self.powerUps_update(delta_time)
+        self.powerUps_coins_update(delta_time)
 
     def powerUps_drop(self, enemy, number):
+
         if number == 0:
             self.powerUpAguja = arcade.Sprite(powerups_folder + os.path.sep + "powerUpAguja.png",
                                               center_x=enemy.center_x,
                                               center_y=enemy.center_y)
             self.powerUpListAguja.append(self.powerUpAguja)
-        if number == 1:
+
+        elif number == 1:
             self.powerUpTriple = arcade.Sprite(powerups_folder + os.path.sep + "powerUpTriple.png",
                                                center_x=enemy.center_x,
                                                center_y=enemy.center_y)
             self.powerUpListTriple.append(self.powerUpTriple)
-        if number == 2:
+
+        elif number == 2:
             self.powerUpLejia = arcade.Sprite(powerups_folder + os.path.sep + "poweUpLejia.png",
                                               center_x=enemy.center_x,
                                               center_y=enemy.center_y)
             self.powerUpListLejia.append(self.powerUpLejia)
-        if 3 <= number <= 20:
+
+        elif 3 <= number <= 4:
+            self.lista_monedas.append(Moneda(bullet_folder + os.path.sep + "gota1.png", 1, enemy.center_x, enemy.center_y))
+
+        elif number == 5:
+            self.lista_monedas.append(Moneda(bullet_folder + os.path.sep + "gota2.png", 5, enemy.center_x, enemy.center_y))
+
+        else:
             pass
 
-    def powerUps_update(self, delta_time):
+    def powerUps_coins_update(self, delta_time):
 
         # powerUp legia
         for self.powerUpLejia in self.powerUpListLejia:
@@ -1010,28 +1054,17 @@ class Game(arcade.View):
                 self.dissapear = True
                 self.cd_dissapear = 0
 
-    def update_shooting(self, player_sprite):
+        for coin in self.lista_monedas:
+            if arcade.check_for_collision(self.player_sprite, coin):
+                self.money += coin.valor
+                coin.kill()
 
-        # shooting
-        self.cd += 2
+    def display_vidas_personaje(self):
 
-        if self.cd % 30 == 0:
-            if player_sprite.shooting_right and player_sprite.shooting_up:
-                self.shoot("right_up", None)
-            elif player_sprite.shooting_left and player_sprite.shooting_up:
-                self.shoot("left_up", None)
-            elif player_sprite.shooting_right and player_sprite.shooting_down:
-                self.shoot("right_down", None)
-            elif player_sprite.shooting_left and player_sprite.shooting_down:
-                self.shoot("left_down", None)
-            elif player_sprite.shooting_right:
-                self.shoot("right", None)
-            elif player_sprite.shooting_up:
-                self.shoot("up", None)
-            elif player_sprite.shooting_left:
-                self.shoot("left", None)
-            elif player_sprite.shooting_down:
-                self.shoot("down", None)
+        i = 0
+        for heart in range(self.player_sprite.number_of_hearts):
+            arcade.Sprite(sprites_folder + os.path.sep + "protagonista.png", 1, center_x=550 + i, center_y=30).draw()
+            i += 20
 
     def on_update(self, delta_time):
         """ Movement and game logic """  # collisions go here
@@ -1055,10 +1088,8 @@ class Game(arcade.View):
             weapon.update_self(self.player_sprite, delta_time)
 
         # update everything
-
         self.collision(delta_time)
         self.player_list.update()
-        self.player_list.update_animation()
         self.bullet_list.update()
         self.enemy_list.update()
         self.bomb_list.update()
@@ -1077,19 +1108,22 @@ class Game(arcade.View):
         # Room entrance
         self.room_draw()
 
-        # text
+        # contadores
         arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
         arcade.draw_text(f"Time wave: {int(self.time_quotient)}", 400, 615, arcade.color.WHITE, 15)
-        i = 0
-        for heart in range(self.player_sprite.number_of_hearts):
-            arcade.Sprite(sprites_folder + os.path.sep + "protagonista.png", 1, center_x=550 + i, center_y=30).draw()
-            i += 20
+        arcade.draw_text(f": {self.money}", 490, 20, arcade.color.WHITE, 15)
+        # dibujar vidas personaje
+        self.display_vidas_personaje()
+
+        # dibujar moneda
+        arcade.Sprite(bullet_folder + os.path.sep + "gota1.png", center_x=480, center_y=30).draw()
 
         # draw all sprites
         self.bomb_list.draw()
         self.powerUpListAguja.draw()
         self.powerUpListTriple.draw()
         self.powerUpListLejia.draw()
+        self.lista_monedas.draw()
         self.weapon_list.draw()
         self.player_list.draw()
         self.bullet_list.draw()
