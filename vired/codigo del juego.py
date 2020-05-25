@@ -82,7 +82,7 @@ class MainCharacter(Character):
             if self.go_up:
                 texture_list = self.walk_up_textures
             elif self.go_down:
-                pass
+                texture_list = self.walk_right_textures
             elif self.go_right:
                 texture_list = self.walk_right_textures
             elif self.go_left:
@@ -104,7 +104,7 @@ class MainCharacter(Character):
         elif self.shooting_up:
             self.texture = self.up_facing
         elif self.shooting_down:
-            pass
+            self.texture = self.right_facing
 
         # main character movement
         if self.go_right:
@@ -167,6 +167,29 @@ class Moneda(arcade.Sprite):
         self.center_x = pos_x
         self.center_y = pos_y
         self.valor = valor
+
+
+class Boss(arcade.Sprite):
+    def __init__(self, filename, scale, pos_x, pos_y, number_of_hearts, speed):
+        super().__init__(filename, scale)
+        self.center_x = pos_x
+        self.center_y = pos_y
+        self.speed = speed
+        self.number_of_hearts = number_of_hearts
+        self.derecha = True
+        self.izquierda = False
+
+    def movement(self):
+        if self.derecha:
+            self.center_x += self.speed
+            if self.center_x > 600:
+                self.izquierda = True
+                self.derecha = False
+        if self.izquierda:
+            self.center_x -= self.speed
+            if self.center_x < 40:
+                self.izquierda = False
+                self.derecha = True
 
 
 class Item:
@@ -255,6 +278,9 @@ class Bullet(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
+    def update_boss(self):
+        self.center_y -= self.change_y
+
 
 class Menu(arcade.View):
     def on_show(self):
@@ -307,6 +333,8 @@ class Game(arcade.View):
         self.invisible_list = None
         self.bomb_list = None
         self.lista_monedas = None
+        self.boss_list =None
+        self.bullet_boss = None
 
         # main character and bullet sprites
         self.player_sprite = None
@@ -328,6 +356,8 @@ class Game(arcade.View):
         self.cuerpos = None
         self.sangre = None
         self.escaleras = None
+        self.background = None
+        self.botes = None
 
         # physics
         self.physics_paredes = None
@@ -369,7 +399,6 @@ class Game(arcade.View):
         self.shop = None
         self.shop_list = None
 
-
         # PowerUps
         self.powerUpAguja = None
         self.powerUpListAguja = None
@@ -383,6 +412,8 @@ class Game(arcade.View):
         self.dissapear = True
         self.cd_dissapear = None
         self.legia = False
+        self.boss_triple = False
+        self.boss_enemy = False
 
     def setup(self):
         """
@@ -407,11 +438,15 @@ class Game(arcade.View):
         self.physics_sangre = arcade.SpriteList()
         self.bomb_list = arcade.SpriteList()
         self.shop_list = arcade.SpriteList()
+        self.boss_list = arcade.SpriteList()
+        self.bullet_boss = arcade.SpriteList()
 
         self.powerUpListAguja = arcade.SpriteList()
         self.powerUpListTriple = arcade.SpriteList()
         self.powerUpListLejia = arcade.SpriteList()
         self.lista_monedas = arcade.SpriteList()
+
+        self.background = arcade.SpriteList()
 
         # Set up the player
         self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling,
@@ -558,6 +593,23 @@ class Game(arcade.View):
         # enemies
         self.create_enemies()
 
+    def rooftop(self):
+        # load map
+        my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "azotea.tmx")
+
+        background = arcade.Sprite(maps_folder + os.path.sep + "fondo azotea.png", center_x=320, center_y=320)
+        self.background.append(background)
+
+        # load layers
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo", 1)
+        self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
+
+        # physics layers and player
+        self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
+
+        self.create_boss()
+
     def room_draw(self):
         # drawing layers
         # Entrance
@@ -597,6 +649,19 @@ class Game(arcade.View):
             self.cuerpos.draw()
             self.escaleras.draw()
 
+        if self.current_room == 4:
+            self.background.draw()
+            self.paredes.draw()
+            self.suelo.draw()
+            self.escaleras.draw()
+
+        if self.current_room == 5:
+            self.paredes.draw()
+            self.suelo.draw()
+            self.obstaculos.draw()
+            self.obstaculos_2.draw()
+            self.botes.draw()
+
     def room_update(self):
 
         # map update
@@ -632,6 +697,24 @@ class Game(arcade.View):
                 self.shop.kill()
             if not self.finish_2:
                 self.player_sprite.center_y = 635
+
+        # Room 3 -> Rooftop
+        if self.player_sprite.center_y > 635 and 514 < self.player_sprite.center_x < 573 and self.current_room == 3:
+            self.current_room = 4
+            self.rooftop()
+            self.shop.kill()
+            self.player_sprite.center_y = 30
+            self.player_sprite.center_x = 70
+
+        # Rooftop -> Outside
+        if self.player_sprite.center_y > 387 and self.current_room == 4:
+            self.player_sprite.center_y = 387
+        if self.player_sprite.center_x > 640 and self.current_room == 4:
+            self.player_sprite.center_x = 620
+        if self.player_sprite.center_x < 10 and self.current_room == 4:
+            self.player_sprite.center_x = 10
+        if self.player_sprite.center_y < 10 and self.current_room == 4:
+            self.player_sprite.center_y = 10
 
         # Going down stairs
         # Room 3 -> Room 2
@@ -718,6 +801,10 @@ class Game(arcade.View):
             if len(self.enemy_list) > 0:
                 self.finish_3 = False
 
+        # Rooftop
+        if self.current_room == 4:
+            self.physics_paredes.update()
+
     def create_enemies(self):
         if self.start:
             max_number = 0
@@ -796,6 +883,25 @@ class Game(arcade.View):
 
                     self.enemy_list.append(enemy)
 
+    def create_enemies2(self, boss, max_number, random_number):
+            if len(self.enemy_list) < max_number:
+                for enemy in range(random_number):
+                    pos_x = boss.center_x
+                    pos_y = boss.center_y
+                    foe_choice = randint(0, 2)
+
+                    if foe_choice == 0:
+                        enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
+                                      1, pos_x, pos_y, 1, 1)
+                    elif foe_choice == 1:
+                        enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
+                                      1, pos_x, pos_y, 2, 1)
+                    elif foe_choice == 2:
+                        enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
+                                      1, pos_x, pos_y, 4, 1)
+
+                    self.enemy_list.append(enemy)
+
     def waves(self):
         if 40 <= self.time_quotient <= 59:
             if self.spawn_cd % 190 == 0:
@@ -811,6 +917,83 @@ class Game(arcade.View):
             self.start = False
             self.time = 60
             self.enemy_death = True
+
+    def create_boss(self):
+        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 300, 100, 5)
+        self.boss_list.append(boss)
+
+    def update_boss(self):
+        for boss in self.boss_list:
+            boss.movement()
+            if 80 <= boss.number_of_hearts <= 100:
+                if self.cd % 30 == 0:
+                    self.boss_shoot(boss)
+            if 50 <= boss.number_of_hearts < 80:
+                self.boss_triple = True
+                if self.cd % 30 == 0:
+                    self.boss_shoot(boss)
+            if 40 <= boss.number_of_hearts < 50:
+                if self.spawn_cd % 190 == 0:
+                    self.create_enemies2(boss, 10, randint(2, 4))
+            if 30 <= boss.number_of_hearts < 40:
+                if self.spawn_cd % 150 == 0:
+                    self.create_enemies2(boss, 15, randint(2, 4))
+            if 25 <= boss.number_of_hearts < 30:
+                if self.spawn_cd % 110 == 0:
+                    self.create_enemies2(boss, 20, randint(2, 4))
+            if 0 <= boss.number_of_hearts < 25:
+                if self.cd % 30 == 0:
+                    self.boss_shoot(boss)
+                if self.spawn_cd % 190 == 0:
+                    self.create_enemies2(boss, 20, randint(2, 4))
+
+            for enemy in self.enemy_list:
+                self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
+                for i in range(len(self.collision_enemy)):
+                    self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
+
+        # collisions player - boss
+        for bullet in self.bullet_list:
+            if arcade.check_for_collision_with_list(bullet, self.paredes):
+                bullet.kill()
+            collision_bullet_boss = arcade.check_for_collision_with_list(bullet, self.boss_list)
+            for boss in collision_bullet_boss:
+                if self.dissapear:
+                    bullet.kill()
+                if boss.number_of_hearts > 0:
+                    boss.number_of_hearts -= 1
+                if boss.number_of_hearts == 0:
+                    boss.kill()
+
+        for bullet in self.bullet_boss:
+            if arcade.check_for_collision_with_list(bullet, self.player_list):
+                self.player_sprite.number_of_hearts -= 1
+                if self.dissapear:
+                    bullet.kill()
+                if self.player_sprite.number_of_hearts == 0:
+                    arcade.pause(1)
+                    game_over = GameOver()
+                    self.window.show_view(game_over)
+
+    def boss_shoot(self, boss):
+        bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", 1)
+        bullet.center_x = boss.center_x
+        bullet.center_y = boss.center_y
+        bullet.change_y = -5
+        self.bullet_boss.append(bullet)
+
+        if self.boss_triple:
+            bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", 1)
+            bullet.center_x = boss.center_x + 20
+            bullet.center_y = boss.center_y
+            bullet.change_y = -5
+            self.bullet_boss.append(bullet)
+
+            bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", 1)
+            bullet.center_x = boss.center_x - 20
+            bullet.center_y = boss.center_y
+            bullet.change_y = -5
+            self.bullet_boss.append(bullet)
 
     def shoot(self, direction, dir):
 
@@ -979,6 +1162,14 @@ class Game(arcade.View):
                     self.powerUps_drop(enemy, randint(0, 19))
                     enemy.kill()
                     self.score += 1
+            collision_bullet_boss = arcade.check_for_collision_with_list(bullet, self.boss_list)
+            for boss in collision_bullet_boss:
+                if self.dissapear:
+                    bullet.kill()
+                if boss.number_of_hearts > 0:
+                    boss.number_of_hearts -= 1
+                if boss.number_of_hearts == 0:
+                    boss.kill()
 
         start_the_wave = arcade.check_for_collision_with_list(self.player_sprite, self.bomb_list)
         if start_the_wave and self.space:
@@ -986,6 +1177,7 @@ class Game(arcade.View):
             self.start = True
 
         self.powerUps_coins_update(delta_time)
+        self.update_boss()
 
     def powerUps_drop(self, enemy, number):
 
@@ -1091,6 +1283,7 @@ class Game(arcade.View):
         self.collision(delta_time)
         self.player_list.update()
         self.bullet_list.update()
+        self.bullet_boss.update()
         self.enemy_list.update()
         self.bomb_list.update()
         self.physics_enemy_list.update()
@@ -1109,14 +1302,14 @@ class Game(arcade.View):
         self.room_draw()
 
         # contadores
-        arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
-        arcade.draw_text(f"Time wave: {int(self.time_quotient)}", 400, 615, arcade.color.WHITE, 15)
-        arcade.draw_text(f": {self.money}", 490, 20, arcade.color.WHITE, 15)
+        # arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
+        # arcade.draw_text(f"Time wave: {int(self.time_quotient)}", 400, 615, arcade.color.WHITE, 15)
+        # arcade.draw_text(f": {self.money}", 490, 20, arcade.color.WHITE, 15)
         # dibujar vidas personaje
-        self.display_vidas_personaje()
+        # self.display_vidas_personaje()
 
         # dibujar moneda
-        arcade.Sprite(bullet_folder + os.path.sep + "gota1.png", center_x=480, center_y=30).draw()
+        # arcade.Sprite(bullet_folder + os.path.sep + "gota1.png", center_x=480, center_y=30).draw()
 
         # draw all sprites
         self.bomb_list.draw()
@@ -1127,7 +1320,9 @@ class Game(arcade.View):
         self.weapon_list.draw()
         self.player_list.draw()
         self.bullet_list.draw()
+        self.bullet_boss.draw()
         self.enemy_list.draw()
+        self.boss_list.draw()
         self.shop_list.draw()
 
     def on_key_press(self, key, modifiers):
