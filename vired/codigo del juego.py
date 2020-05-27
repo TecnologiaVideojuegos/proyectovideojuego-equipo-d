@@ -1313,6 +1313,7 @@ class Game(arcade.View):
             for item in self.tienda.objetos_planta_baja:
                 if arcade.check_for_collision(self.player_sprite, item):
                     if self.player_sprite.money >= item.precio:
+                        self.player_sprite.money -= item.precio
                         if self.tienda.objetos_planta_baja.index(item) == 0:
                             item.recogido = True
                             self.weapon.kill()
