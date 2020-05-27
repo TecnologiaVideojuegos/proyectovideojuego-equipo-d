@@ -690,6 +690,12 @@ class Game(arcade.View):
         # load map
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "tienda.tmx")
 
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo", 1)
+        self.botes = arcade.tilemap.process_layer(my_map, "botes", 1)
+        self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
+        self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos 2", 1)
+
         # physics layers and player
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
 
@@ -738,17 +744,13 @@ class Game(arcade.View):
             self.suelo.draw()
             self.escaleras.draw()
 
-        if self.current_room == 5:
+        # Tienda
+        if self.current_room == 6: # habra 4 tiendas vendiendo objetos distintos, mas adelante las añado asi como las relaciones
             self.paredes.draw()
             self.suelo.draw()
             self.obstaculos.draw()
             self.obstaculos_2.draw()
             self.botes.draw()
-
-        # Tienda
-        if self.current_room == 6: # habra 4 tiendas vendiendo objetos distintos, mas adelante las añado asi como las relaciones
-            self.paredes.draw()
-            self.suelo.draw()
             self.tienda.draw_tendero()
             self.tienda.draw_obj_planta_baja()
 
