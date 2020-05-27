@@ -517,13 +517,6 @@ class Game(arcade.View):
         self.cd_dissapear = 0
         self.cd_triple = 0
 
-        # List of music
-        self.music_list = [music_folder + os.path.sep + "music_room1-2.mp3",
-                           music_folder + os.path.sep + "music_room1-2.mp3",
-                           music_folder + os.path.sep + "music_room3-4.ogg",
-                           music_folder + os.path.sep + "music_room3-4.ogg",
-                           music_folder + os.path.sep + "music_room_boss.ogg"]
-
     # Rooms created
     def entrance(self):
         # load map
