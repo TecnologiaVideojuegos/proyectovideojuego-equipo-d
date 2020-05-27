@@ -1125,7 +1125,7 @@ class Game(arcade.View):
 
         if direction == "right" or direction == "left" or direction == "up" or direction == "down" or \
                 direction == "right_up" or direction == "right_down" or direction == "left_up" or direction == "left_down":
-            shoot = arcade.load_sound(sound_folder + os.path.sep + "prueba_disparo.wav")
+            shoot = arcade.load_sound(sound_folder + os.path.sep + "disparo.wav")
             arcade.play_sound(shoot)
 
         if direction == "right":
