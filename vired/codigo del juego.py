@@ -48,7 +48,7 @@ class MainCharacter(Character):
         self.shooting_left = None
         self.shooting_up = None
         self.shooting_down = None
-        self.money = 0
+        self.money = 10
 
         self.counter = 0
 
@@ -496,6 +496,10 @@ class Game(arcade.View):
                                            3, 200)
         self.player_list.append(self.player_sprite)
 
+        self.weapon = Weapon(bullet_folder + os.path.sep + "jeringa1.png", self.player_sprite.center_x + 15,
+                             self.player_sprite.center_y - 5, 90)
+        self.weapon_list.append(self.weapon)
+
         # La tienda
         self.tienda = Tienda()
         # The entrances is the first room
@@ -507,7 +511,7 @@ class Game(arcade.View):
         # Set up counters
         self.score = 0
         # -------------------------------------------------------------------------------
-        self.time = 60
+        self.time = 0
         self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
@@ -548,9 +552,6 @@ class Game(arcade.View):
 
         # enemies
         self.create_enemies()
-        self.weapon = Weapon(bullet_folder + os.path.sep + "jeringa1.png", self.player_sprite.center_x + 15,
-                             self.player_sprite.center_y - 5, 90)
-        self.weapon_list.append(self.weapon)
 
         bool_music = True
         if bool_music:
@@ -567,6 +568,7 @@ class Game(arcade.View):
         self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos 2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
+        self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
         self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
 
         # bomb
@@ -689,12 +691,6 @@ class Game(arcade.View):
         # load map
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "tienda.tmx")
 
-        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
-        self.suelo = arcade.tilemap.process_layer(my_map, "suelo", 1)
-        self.botes = arcade.tilemap.process_layer(my_map, "botes", 1)
-        self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
-        self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos 2", 1)
-
         # physics layers and player
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
 
@@ -714,6 +710,7 @@ class Game(arcade.View):
             self.suelo.draw()
             self.obstaculos.draw()
             self.obstaculos_2.draw()
+            self.perfeccionar.draw()
             self.escaleras.draw()
 
         # Room 2
@@ -742,13 +739,17 @@ class Game(arcade.View):
             self.suelo.draw()
             self.escaleras.draw()
 
-        # Tienda
-        if self.current_room == 6: # habra 4 tiendas vendiendo objetos distintos, mas adelante las añado asi como las relaciones
+        if self.current_room == 5:
             self.paredes.draw()
             self.suelo.draw()
             self.obstaculos.draw()
             self.obstaculos_2.draw()
             self.botes.draw()
+
+        # Tienda
+        if self.current_room == 6: # habra 4 tiendas vendiendo objetos distintos, mas adelante las añado asi como las relaciones
+            self.paredes.draw()
+            self.suelo.draw()
             self.tienda.draw_tendero()
             self.tienda.draw_obj_planta_baja()
 
@@ -1320,6 +1321,7 @@ class Game(arcade.View):
                             self.weapon = Weapon(bullet_folder + os.path.sep + "jeringa2.png", self.player_sprite.center_x + 15, self.player_sprite.center_y - 5, 90)
                             self.weapon_list.append(self.weapon)
                             self.jeringa1_activa = False
+                            self.jeringa3_activa = False
                             self.jeringa2_activa = True
                         item.kill()
 
