@@ -567,7 +567,6 @@ class Game(arcade.View):
         self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos 2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
-        self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
         self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
 
         # bomb
@@ -715,7 +714,6 @@ class Game(arcade.View):
             self.suelo.draw()
             self.obstaculos.draw()
             self.obstaculos_2.draw()
-            self.perfeccionar.draw()
             self.escaleras.draw()
 
         # Room 2
