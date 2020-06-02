@@ -1518,14 +1518,14 @@ class Game(arcade.View):
         self.room_draw()
 
         # contadores
-        # arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
-        # arcade.draw_text(f"Time wave: {int(self.time_quotient)}", 400, 615, arcade.color.WHITE, 15)
-        # arcade.draw_text(f": {self.player_sprite.money}", 490, 20, arcade.color.WHITE, 15)
+        arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
+        arcade.draw_text(f"Time wave: {int(self.time_quotient)}", 400, 615, arcade.color.WHITE, 15)
+        arcade.draw_text(f": {self.player_sprite.money}", 490, 20, arcade.color.WHITE, 15)
         # dibujar vidas personaje
-        # self.display_vidas_personaje()
+        self.display_vidas_personaje()
 
         # dibujar moneda
-        # arcade.Sprite(bullet_folder + os.path.sep + "gota1.png", center_x=480, center_y=30).draw()
+        arcade.Sprite(bullet_folder + os.path.sep + "gota1.png", center_x=480, center_y=30).draw()
 
         # draw all sprites
         self.bomb_list.draw()
