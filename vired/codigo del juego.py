@@ -197,14 +197,14 @@ class Item(arcade.Sprite):
 
 
 class Tienda:
-
     objetos_planta_baja = []
     objetos_planta1 = []
     objetos_planta2 = []
     objetos_planta3 = []
 
     def __init__(self):
-        self.tendero = arcade.Sprite(sprites_folder + os.path.sep + "tendero.png", sprite_scaling, center_x=screen_width/2, center_y=450)
+        self.tendero = arcade.Sprite(sprites_folder + os.path.sep + "tendero.png", sprite_scaling,
+                                     center_x=screen_width / 2, center_y=450)
         self.jeringa1 = Item(bullet_folder + os.path.sep + "jeringa2.png", 250, 400, 10)
         self.objetos_planta_baja.append(self.jeringa1)
 
@@ -212,11 +212,12 @@ class Tienda:
         self.tendero.draw()
 
     def draw_obj_planta_baja(self):
-        for item in self.objetos_planta_baja: # poner un atributo para dejar espacios entre prints
+        for item in self.objetos_planta_baja:  # poner un atributo para dejar espacios entre prints
             if not item.recogido:
                 item.draw()
-                arcade.Sprite(bullet_folder + os.path.sep + "gota1.png", sprite_scaling/1.5, center_x=item.center_x, center_y=item.center_y-30).draw()
-                arcade.draw_text(str(item.precio), item.center_x-20, item.center_y-37, arcade.color.BLACK, 10)
+                arcade.Sprite(bullet_folder + os.path.sep + "gota1.png", sprite_scaling / 1.5, center_x=item.center_x,
+                              center_y=item.center_y - 30).draw()
+                arcade.draw_text(str(item.precio), item.center_x - 20, item.center_y - 37, arcade.color.BLACK, 10)
 
     def draw_obj_planta1(self):
         pass
@@ -349,6 +350,59 @@ class GameOver(arcade.View):
             game_view = Game()
             game_view.setup()
             self.window.show_view(game_view)
+
+
+class Credits(arcade.View):
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("CREDITOS", screen_width // 2, 530,
+                         arcade.color.WHITE, font_size=60, anchor_x="center", align="center")
+        arcade.draw_text("Jefe de Proyecto: Óscar García\n\nProgramadores: Fernando Parra\n\n\n\nDiseño: Diego "
+                         "Plaza\n\nSonido: Alejandro Cedillo\n\nTester: Juan Carlos", screen_width // 2, 150,
+                         arcade.color.WHITE, font_size=30, anchor_x="center", align="left")
+        arcade.draw_text("Jorge Fernández", 330, 330,
+                         arcade.color.WHITE, font_size=30)
+        arcade.draw_text("Enter - Volver", 500, 50,
+                         arcade.color.WHITE, font_size=15)
+
+    def on_key_press(self, key, _modifiers):
+            if key == arcade.key.ESCAPE:
+                menu_view = Menu()
+                self.window.show_view(menu_view)
+            if key == arcade.key.R:
+                game_view = Game()
+                game_view.setup()
+                self.window.show_view(game_view)
+            if key == arcade.key.ENTER:
+                win = Winner()
+                self.window.show_view(win)
+
+
+class Winner(arcade.View):
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("WINNER", screen_width // 2, 500,
+                         arcade.color.WHITE, 70, anchor_x="center")
+        arcade.draw_text("Esc - Menu\n\nR - Volver a jugar\n\nEnter - Créditos", screen_width // 2, screen_height // 3,
+                         arcade.color.WHITE, font_size=30, anchor_x="center", align="center")
+
+    def on_key_press(self, key, _modifiers):
+            if key == arcade.key.ESCAPE:
+                menu_view = Menu()
+                self.window.show_view(menu_view)
+            if key == arcade.key.R:
+                game_view = Game()
+                game_view.setup()
+                self.window.show_view(game_view)
+            if key == arcade.key.ENTER:
+                credit = Credits()
+                self.window.show_view(credit)
 
 
 class Game(arcade.View):
@@ -511,7 +565,7 @@ class Game(arcade.View):
         # Set up counters
         self.score = 0
         # -------------------------------------------------------------------------------
-        self.time = 0
+        self.time = 5
         self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
@@ -740,7 +794,7 @@ class Game(arcade.View):
             self.botes.draw()
 
         # Tienda
-        if self.current_room == 6: # habra 4 tiendas vendiendo objetos distintos, mas adelante las añado asi como las relaciones
+        if self.current_room == 6:  # habra 4 tiendas vendiendo objetos distintos, mas adelante las añado asi como las relaciones
             self.paredes.draw()
             self.suelo.draw()
             self.tienda.draw_tendero()
@@ -765,7 +819,7 @@ class Game(arcade.View):
             if self.finish_0:
                 self.current_room = 6
                 self.shop_room()
-                self.player_sprite.center_y = screen_height/2
+                self.player_sprite.center_y = screen_height / 2
                 self.player_sprite.center_x = 630
                 self.shop.kill()
 
@@ -835,7 +889,7 @@ class Game(arcade.View):
         if self.player_sprite.center_x >= screen_width:
             self.current_room = 0
             self.entrance()
-            self.player_sprite.center_y = screen_height/2
+            self.player_sprite.center_y = screen_height / 2
             self.player_sprite.center_x = 10
 
         self.room_update_2()
@@ -847,6 +901,9 @@ class Game(arcade.View):
             self.physics_paredes.update()
             self.physics_cosas.update()
             self.physics_obstaculos.update()
+            for bullet in self.bullet_list:
+                if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(bullet, self.cosas):
+                    bullet.kill()
             if len(self.enemy_list) == 0 and self.enemy_death:
                 self.enemy_death = False
                 self.finish_0 = True
@@ -870,6 +927,10 @@ class Game(arcade.View):
                 self.shop_list.append(self.shop)
             if len(self.enemy_list) > 0:
                 self.finish_1 = False
+            for bullet in self.bullet_list:
+                if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(bullet, self.obstaculos_2):
+                    bullet.kill()
+
         # Room 2
         if self.current_room == 2:
             self.physics_paredes.update()
@@ -886,12 +947,20 @@ class Game(arcade.View):
                 self.shop_list.append(self.shop)
             if len(self.enemy_list) > 0:
                 self.finish_2 = False
+            for bullet in self.bullet_list:
+                if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(
+                        bullet, self.obstaculos_2) or arcade.check_for_collision_with_list(bullet, self.cuerpos):
+                    bullet.kill()
+
         # Room 3
         if self.current_room == 3:
             self.physics_paredes.update()
             self.physics_sangre.update()
             self.physics_cuerpos.update()
             self.physics_obstaculos.update()
+            for bullet in self.bullet_list:
+                if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(bullet, self.cuerpos):
+                    bullet.kill()
             if len(self.enemy_list) == 0 and self.enemy_death:
                 self.enemy_death = False
                 self.finish_3 = True
@@ -1015,7 +1084,7 @@ class Game(arcade.View):
         if self.time_quotient < 0:
             self.max_enemies = 0
             self.start = False
-            self.time = 60
+            self.time = 5
             self.enemy_death = True
 
     def create_boss(self):
@@ -1296,6 +1365,8 @@ class Game(arcade.View):
                     boss.number_of_hearts -= 1
                 if boss.number_of_hearts == 0:
                     boss.kill()
+                    win = Winner()
+                    self.window.show_view(win)
 
         start_the_wave = arcade.check_for_collision_with_list(self.player_sprite, self.bomb_list)
         if start_the_wave and self.space:
@@ -1311,7 +1382,8 @@ class Game(arcade.View):
                         if self.tienda.objetos_planta_baja.index(item) == 0:
                             item.recogido = True
                             self.weapon.kill()
-                            self.weapon = Weapon(bullet_folder + os.path.sep + "jeringa2.png", self.player_sprite.center_x + 15, self.player_sprite.center_y - 5, 90)
+                            self.weapon = Weapon(bullet_folder + os.path.sep + "jeringa2.png",
+                                                 self.player_sprite.center_x + 15, self.player_sprite.center_y - 5, 90)
                             self.weapon_list.append(self.weapon)
                             self.jeringa1_activa = False
                             self.jeringa3_activa = False
