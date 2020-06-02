@@ -20,8 +20,8 @@ powerups_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + 
 resources_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites"
 maps_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps"
 layer_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.path.sep + "layers"
-music_folder = path2 + os.path.sep + "resources" + os.path.sep + "music"
-sound_folder = path2 + os.path.sep + "resources" + os.path.sep + "sounds"
+music_folder = path2 + os.path.sep + "resources" + os.path.sep + "newmusic"
+sound_folder = path2 + os.path.sep + "resources" + os.path.sep + "newsounds"
 
 
 class Character(arcade.Sprite):
@@ -113,7 +113,7 @@ class MainCharacter(Character):
 
         if self.go_down or self.go_right or self.go_left or self.go_up:
             if self.counter % 20 == 0:
-                move = arcade.load_sound(sound_folder + os.path.sep + "move.flac")
+                move = arcade.load_sound(sound_folder + os.path.sep + "move.wav")
                 arcade.play_sound(move)
 
         self.counter += 2
@@ -602,7 +602,7 @@ class Game(arcade.View):
 
         bool_music = True
         if bool_music:
-            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room1-2.mp3")
+            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room1-2.wav")
             arcade.play_sound(self.music)
             return bool_music == False
 
@@ -638,7 +638,7 @@ class Game(arcade.View):
 
         bool_music = True
         if bool_music:
-            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room1-2.mp3")
+            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room1-2.wav")
             arcade.play_sound(self.music)
             return bool_music == False
 
@@ -677,7 +677,7 @@ class Game(arcade.View):
 
         bool_music = True
         if bool_music:
-            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room3-4.ogg")
+            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room3-4.wav")
             arcade.play_sound(self.music)
             return bool_music == False
 
@@ -713,7 +713,7 @@ class Game(arcade.View):
 
         bool_music = True
         if bool_music:
-            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room3-4.ogg")
+            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room3-4.wav")
             arcade.play_sound(self.music)
             return bool_music == False
 
@@ -1157,13 +1157,13 @@ class Game(arcade.View):
         self.bullet_boss.append(bullet)
 
         if self.boss_triple:
-            bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", 1)
+            bullet = Bullet(bullet_folder + os.path.sep + "gota2.png", 1)
             bullet.center_x = boss.center_x + 20
             bullet.center_y = boss.center_y
             bullet.change_y = -5
             self.bullet_boss.append(bullet)
 
-            bullet = Bullet(bullet_folder + os.path.sep + "gota1.png", 1)
+            bullet = Bullet(bullet_folder + os.path.sep + "gota3.png", 1)
             bullet.center_x = boss.center_x - 20
             bullet.center_y = boss.center_y
             bullet.change_y = -5
