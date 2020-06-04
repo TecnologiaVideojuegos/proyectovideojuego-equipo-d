@@ -288,18 +288,6 @@ class Weapon(arcade.Sprite):
             self.center_y -= player_sprite.speed * delta_time
 
 
-class Consumable(Item):
-    def __init__(self, name):
-        super().__init__(name)
-
-    def apply_consumable(self, consumable):
-        """
-        Aplica objeto consumible
-        String -> None
-        """
-        pass
-
-
 class Bullet(arcade.Sprite):
 
     def __init__(self, filename, sprite_scale):
@@ -315,6 +303,7 @@ class Bullet(arcade.Sprite):
 
 
 class Menu(arcade.View):
+
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
 
@@ -352,16 +341,44 @@ class GameOver(arcade.View):
             self.window.show_view(game_view)
 
 
+class Pause(arcade.View):
+
+    def __init__(self, game_view):
+        super().__init__()
+        self.game_view = game_view
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("En Pausa", screen_width // 2, screen_height // 1.5,
+                         arcade.color.WHITE, 30, anchor_x="center")
+        arcade.draw_text("Enter - Reanudar\n\nEsc - Menu\n\nR - Reiniciar", screen_width // 2, screen_height // 4,
+                         arcade.color.WHITE, font_size=30, anchor_x="center")
+
+    def on_key_press(self, key, _modifiers):
+        if key == arcade.key.ENTER:
+            self.window.show_view(self.game_view)
+        if key == arcade.key.ESCAPE:
+            menu_view = Menu()
+            self.window.show_view(menu_view)
+        if key == arcade.key.R:
+            game_view = Game()
+            game_view.setup()
+            self.window.show_view(game_view)
+
+
 class Credits(arcade.View):
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("CREDITOS", screen_width // 2, 530,
+        arcade.draw_text("CREDITOS", screen_width / 2, 530,
                          arcade.color.WHITE, font_size=60, anchor_x="center", align="center")
         arcade.draw_text("Jefe de Proyecto: Óscar García\n\nProgramadores: Fernando Parra\n\n\n\nDiseño: Diego "
-                         "Plaza\n\nSonido: Alejandro Cedillo\n\nTester: Juan Carlos", screen_width // 2, 150,
+                         "Plaza\n\nSonido: Alejandro Cedillo\n\nTester: Juan Carlos", screen_width / 2, 150,
                          arcade.color.WHITE, font_size=30, anchor_x="center", align="left")
         arcade.draw_text("Jorge Fernández", 330, 330,
                          arcade.color.WHITE, font_size=30)
@@ -510,6 +527,7 @@ class Game(arcade.View):
         self.jeringa1_activa = True
         self.jeringa2_activa = False
         self.jeringa3_activa = False
+        self.pause_done = False
 
     def setup(self):
         """
@@ -570,6 +588,18 @@ class Game(arcade.View):
         self.spawn_cd = 0
         self.cd_dissapear = 0
         self.cd_triple = 0
+
+    def reset_things(self):
+
+        self.player_sprite.go_right = False
+        self.player_sprite.go_left = False
+        self.player_sprite.go_up = False
+        self.player_sprite.go_down = False
+        self.player_sprite.shooting_right = False
+        self.player_sprite.shooting_left = False
+        self.player_sprite.shooting_up = False
+        self.player_sprite.shooting_down = False
+        self.pause_done = False
 
     # Rooms created
     def entrance(self):
@@ -1415,11 +1445,11 @@ class Game(arcade.View):
 
         elif 3 <= number <= 4:
             self.lista_monedas.append(
-                Moneda(bullet_folder + os.path.sep + "gota1.png", 1, enemy.center_x, enemy.center_y))
+                Moneda(powerups_folder + os.path.sep + "moneda1.png", 1, enemy.center_x, enemy.center_y))
 
         elif number == 5:
             self.lista_monedas.append(
-                Moneda(bullet_folder + os.path.sep + "gota2.png", 5, enemy.center_x, enemy.center_y))
+                Moneda(powerups_folder + os.path.sep + "moneda5.png", 5, enemy.center_x, enemy.center_y))
 
         else:
             pass
@@ -1477,6 +1507,9 @@ class Game(arcade.View):
     def on_update(self, delta_time):
         """ Movement and game logic """  # collisions go here
 
+        if self.pause_done:
+            self.reset_things()
+
         # Counters
         self.spawn_cd += 1
         if self.start:
@@ -1521,11 +1554,12 @@ class Game(arcade.View):
         arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
         arcade.draw_text(f"Time wave: {int(self.time_quotient)}", 400, 615, arcade.color.WHITE, 15)
         arcade.draw_text(f": {self.player_sprite.money}", 490, 20, arcade.color.WHITE, 15)
+
         # dibujar vidas personaje
         self.display_vidas_personaje()
 
         # dibujar moneda
-        arcade.Sprite(bullet_folder + os.path.sep + "gota1.png", center_x=480, center_y=30).draw()
+        arcade.Sprite(powerups_folder + os.path.sep + "moneda1.png", center_x=480, center_y=30).draw()
 
         # draw all sprites
         self.bomb_list.draw()
@@ -1581,6 +1615,11 @@ class Game(arcade.View):
 
         if key == arcade.key.SPACE:
             self.space = True
+
+        if key == arcade.key.ESCAPE:
+            self.pause_done = True
+            pause_view = Pause(self)
+            self.window.show_view(pause_view)
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W:
