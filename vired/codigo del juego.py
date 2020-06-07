@@ -22,6 +22,7 @@ maps_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps"
 layer_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.path.sep + "layers"
 music_folder = path2 + os.path.sep + "resources" + os.path.sep + "newmusic"
 sound_folder = path2 + os.path.sep + "resources" + os.path.sep + "newsounds"
+pantallas_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.path.sep + "pantallas"
 
 
 class Character(arcade.Sprite):
@@ -579,6 +580,11 @@ class Game(arcade.View):
         self.jeringa3_activa = False
         self.pause_done = False
 
+        # Roof vida
+        self.vida = None
+        self.vida_2 = None
+        self.rectangle_right_hearts = None
+
     def setup(self):
         """
         Set up the game and initialize the variables. Call this function to restart the game
@@ -639,6 +645,8 @@ class Game(arcade.View):
         self.cd_dissapear = 0
         self.cd_triple = 0
 
+        self.rectangle_right_hearts = 540
+
     def reset_things(self):
 
         self.player_sprite.go_right = False
@@ -695,7 +703,6 @@ class Game(arcade.View):
         self.suelo = arcade.tilemap.process_layer(my_map, "suelo ", 1)
         self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos 2", 1)
         self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
-        self.perfeccionar = arcade.tilemap.process_layer(my_map, "perfeccionar", 1)
         self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
 
         # bomb
@@ -711,7 +718,6 @@ class Game(arcade.View):
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
         self.physics_obstaculos = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos)
         self.physics_obstaculos2 = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos_2)
-        self.physics_perfeccionar = arcade.PhysicsEngineSimple(self.player_sprite, self.perfeccionar)
 
         # enemies
         self.create_enemies()
@@ -831,13 +837,13 @@ class Game(arcade.View):
             self.obstaculos.draw()
             self.escaleras.draw()
 
+
         # Room 1
         if self.current_room == 1:
             self.paredes.draw()
             self.suelo.draw()
             self.obstaculos.draw()
             self.obstaculos_2.draw()
-            self.perfeccionar.draw()
             self.escaleras.draw()
 
         # Room 2
@@ -865,6 +871,10 @@ class Game(arcade.View):
             self.paredes.draw()
             self.suelo.draw()
             self.escaleras.draw()
+            self.vida = arcade.draw_lrtb_rectangle_filled(100, 540, 600, 575,
+                                                          arcade.csscolor.RED)
+            self.vida = arcade.draw_lrtb_rectangle_filled(100, self.rectangle_right_hearts, 600, 575,
+                                                          arcade.csscolor.GREEN)
 
         if self.current_room == 5:
             self.paredes.draw()
@@ -878,6 +888,8 @@ class Game(arcade.View):
             self.paredes.draw()
             self.suelo.draw()
             self.tienda.draw_tendero()
+            arcade.draw_text("TENDERO: Compra algunos de estos productos que te pueden ayudar", 45, 105, arcade.color.BLACK, 15)
+            arcade.draw_text("en derrotar al virus", 45, 75, arcade.color.BLACK, 15)
             if self.selling == 0:
                 self.tienda.draw_obj_planta_baja()
             elif self.selling == 1:
@@ -1023,7 +1035,6 @@ class Game(arcade.View):
             self.physics_paredes.update()
             self.physics_obstaculos.update()
             self.physics_obstaculos2.update()
-            self.physics_perfeccionar.update()
             if len(self.enemy_list) == 0 and self.enemy_death:
                 self.enemy_death = False
                 self.finish_1 = True
@@ -1193,7 +1204,7 @@ class Game(arcade.View):
             self.enemy_death = True
 
     def create_boss(self):
-        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 300, 100, 5)
+        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 400, 100, 5)
         self.boss_list.append(boss)
 
     def update_boss(self):
@@ -1238,6 +1249,8 @@ class Game(arcade.View):
                     boss.number_of_hearts -= 1
                 if boss.number_of_hearts == 0:
                     boss.kill()
+                    winner = Winner()
+                    self.window.show_view(winner)
                     music = True
                     if music:
                         victory = arcade.load_sound(music_folder + os.path.sep + "victory.wav")
@@ -1469,10 +1482,10 @@ class Game(arcade.View):
                         return music == False
             collision_bullet_boss = arcade.check_for_collision_with_list(bullet, self.boss_list)
             for boss in collision_bullet_boss:
-                if self.dissapear:
-                    bullet.kill()
+                bullet.kill()
                 if boss.number_of_hearts > 0:
                     boss.number_of_hearts -= 1
+                    self.rectangle_right_hearts -= 4.4
                 if boss.number_of_hearts == 0:
                     boss.kill()
                     win = Winner()
