@@ -49,7 +49,7 @@ class MainCharacter(Character):
         self.shooting_left = None
         self.shooting_up = None
         self.shooting_down = None
-        self.money = 20
+        self.money = 40
 
         self.counter = 0
 
@@ -146,13 +146,6 @@ class Enemy(Character):
         if self.center_y > player.center_y:
             self.center_y -= self.speed
 
-    def drop(self):
-        """
-        Elige un item al azar del drop list y lo retorna
-        None -> String
-        """
-        return self.drop_list[randint(0, len(self.drop_list) - 1)]  # no tengo en cuenta droprate
-
 
 class Moneda(arcade.Sprite):
     def __init__(self, sprite_moneda, valor, pos_x, pos_y):
@@ -222,7 +215,7 @@ class Tienda:
         self.jeringa3 = Item(bullet_folder + os.path.sep + "jeringa3.png", 250, 400, 12)
 
         self.objetos_planta2.append(self.jeringa3)
-        # self.objetos_planta2.append(self.botas)
+        self.objetos_planta2.append(self.botas)
 
         # planta 3
         self.corazon = Item(powerups_folder + os.path.sep + "corazon obj.png", 300, 400, 15)
@@ -639,7 +632,7 @@ class Game(arcade.View):
         # Set up counters
         self.score = 0
         # -------------------------------------------------------------------------------
-        self.time = 5
+        self.time = 0
         self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
@@ -955,6 +948,16 @@ class Game(arcade.View):
             if not self.finish_2:
                 self.player_sprite.center_y = 635
 
+        # Room 2 -> Shop
+        if self.player_sprite.center_x <= 0 and self.current_room == 2:
+            if self.finish_2:
+                self.current_room = 6
+                self.selling = 2
+                self.shop_room()
+                self.player_sprite.center_y = screen_height / 2 - 42
+                self.player_sprite.center_x = 600
+                self.shop.kill()
+
         # Room 3 -> Rooftop
         if self.player_sprite.center_y > 635 and 514 < self.player_sprite.center_x < 573 and self.current_room == 3:
             self.current_room = 4
@@ -962,6 +965,16 @@ class Game(arcade.View):
             self.shop.kill()
             self.player_sprite.center_y = 30
             self.player_sprite.center_x = 70
+
+        # Room 3 -> Shop
+        if self.player_sprite.center_x <= 0 and self.current_room == 3:
+            if self.finish_3:
+                self.current_room = 6
+                self.selling = 3
+                self.shop_room()
+                self.player_sprite.center_y = screen_height / 2
+                self.player_sprite.center_x = 635
+                self.shop.kill()
 
         # Rooftop -> Outside
         if self.player_sprite.center_y > 387 and self.current_room == 4:
@@ -1006,6 +1019,20 @@ class Game(arcade.View):
         if self.player_sprite.center_x >= screen_width and self.selling == 1:
             self.current_room = 1
             self.room_1()
+            self.player_sprite.center_y = screen_height / 2
+            self.player_sprite.center_x = 10
+
+        # Shop -> Room 2
+        if self.player_sprite.center_x >= screen_width and self.selling == 2:
+            self.current_room = 2
+            self.room_2()
+            self.player_sprite.center_y = screen_height / 2 + 70
+            self.player_sprite.center_x = 15
+
+        # Shop -> Room 3
+        if self.player_sprite.center_x >= screen_width and self.selling == 3:
+            self.current_room = 3
+            self.room_3()
             self.player_sprite.center_y = screen_height / 2
             self.player_sprite.center_x = 10
 
@@ -1247,7 +1274,7 @@ class Game(arcade.View):
                     bullet.kill()
                 if boss.number_of_hearts > 0:
                     boss.number_of_hearts -= 1
-                if boss.number_of_hearts == 0:
+                if boss.number_of_hearts <= 0:
                     boss.kill()
                     winner = Winner()
                     self.window.show_view(winner)
@@ -1515,6 +1542,7 @@ class Game(arcade.View):
             elif self.selling == 1:
                 for item in self.tienda.objetos_planta1:
                     if arcade.check_for_collision(self.player_sprite, item):
+                        # jeringa2
                         if item == self.tienda.jeringa2 and item.num_colisiones == 0:
                             if self.player_sprite.money >= item.precio:
                                 self.player_sprite.money -= item.precio
@@ -1528,6 +1556,7 @@ class Game(arcade.View):
                                 self.jeringa3_activa = False
                                 self.jeringa2_activa = True
                                 item.kill()
+                        # botas
                         elif item == self.tienda.botas and item.num_colisiones == 0:
                             if self.player_sprite.money >= item.precio:
                                 self.player_sprite.money -= item.precio
@@ -1539,12 +1568,42 @@ class Game(arcade.View):
             # segunda planta
             elif self.selling == 2:
                 for item in self.tienda.objetos_planta2:
-                    pass
+                    if arcade.check_for_collision(self.player_sprite, item):
+                        # botas
+                        if item == self.tienda.botas and item.num_colisiones == 0:
+                            if self.player_sprite.money >= item.precio:
+                                self.player_sprite.money -= item.precio
+                                item.num_colisiones += 1
+                                item.recogido = True
+                                self.player_sprite.speed = 250
+                                item.kill()
+                        # jeringa3
+                        elif item == self.tienda.jeringa3 and item.num_colisiones == 0:
+                            if self.player_sprite.money >= item.precio:
+                                self.player_sprite.money -= item.precio
+                                item.num_colisiones += 1
+                                item.recogido = True
+                                self.weapon.kill()
+                                self.weapon = Weapon(bullet_folder + os.path.sep + "jeringa3.png",
+                                                     self.player_sprite.center_x + 15,
+                                                     self.player_sprite.center_y - 5, 90)
+                                self.weapon_list.append(self.weapon)
+                                self.jeringa1_activa = False
+                                self.jeringa3_activa = True
+                                self.jeringa2_activa = False
+                                item.kill()
 
             # tercera planta
             elif self.selling == 3:
                 for item in self.tienda.objetos_planta3:
-                    pass
+                    if arcade.check_for_collision(self.player_sprite, item):
+                        if item == self.tienda.corazon and item.num_colisiones == 0:
+                            if self.player_sprite.money >= item.precio:
+                                self.player_sprite.money -= item.precio
+                                item.num_colisiones += 1
+                                item.recogido = True
+                                self.player_sprite.number_of_hearts += 1
+                                item.kill()
 
         self.powerUps_coins_update(delta_time)
         self.update_boss()
