@@ -133,7 +133,6 @@ class Enemy(Character):
         super().__init__(filename, scale, number_of_hearts, speed)
         self.center_x = pos_x
         self.center_y = pos_y
-        self.drop_list = []  # items, todavía por definir, lista de objetos (clase)
 
     def movement(self, player):
 
@@ -148,12 +147,20 @@ class Enemy(Character):
 
 
 class Moneda(arcade.Sprite):
-    def __init__(self, sprite_moneda, valor, pos_x, pos_y):
+    def __init__(self, sprite_moneda, valor, pos_x, pos_y, tiempo_vida):
         super().__init__(sprite_moneda)
         self.center_x = pos_x
         self.center_y = pos_y
         self.valor = valor
+        self.tiempo_vida = tiempo_vida
 
+
+class PowerUp(arcade.Sprite):
+    def __init__(self, sprite, pos_x, pos_y, tiempo_vida):
+        super().__init__(sprite)
+        self.center_x = pos_x
+        self.center_y = pos_y
+        self.tiempo_vida = tiempo_vida
 
 class Boss(arcade.Sprite):
     def __init__(self, filename, scale, pos_x, pos_y, number_of_hearts, speed):
@@ -532,6 +539,7 @@ class Game(arcade.View):
         self.spawn_cd = None
         self.time = None
         self.time_quotient = None
+        self.tiempo_vida = None
 
         self.start = False
         self.space = False
@@ -632,11 +640,12 @@ class Game(arcade.View):
         # Set up counters
         self.score = 0
         # -------------------------------------------------------------------------------
-        self.time = 0
+        self.time = 60
         self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
         self.cd_triple = 0
+        self.tiempo_vida = 5
 
         self.rectangle_right_hearts = 540
 
@@ -882,7 +891,7 @@ class Game(arcade.View):
             self.suelo.draw()
             self.tienda.draw_tendero()
             arcade.draw_text("TENDERO: Compra algunos de estos productos que te pueden ayudar", 45, 105, arcade.color.BLACK, 15)
-            arcade.draw_text("en derrotar al virus", 45, 75, arcade.color.BLACK, 15)
+            arcade.draw_text("a derrotar al virus", 45, 75, arcade.color.BLACK, 15)
             if self.selling == 0:
                 self.tienda.draw_obj_planta_baja()
             elif self.selling == 1:
@@ -1227,7 +1236,7 @@ class Game(arcade.View):
         if self.time_quotient < 0:
             self.max_enemies = 0
             self.start = False
-            self.time = 5
+            self.time = 60
             self.enemy_death = True
 
     def create_boss(self):
@@ -1611,41 +1620,35 @@ class Game(arcade.View):
     def powerUps_drop(self, enemy, number):
 
         if number == 0:
-            self.powerUpAguja = arcade.Sprite(powerups_folder + os.path.sep + "powerUpAguja.png",
-                                              center_x=enemy.center_x,
-                                              center_y=enemy.center_y)
+            self.powerUpAguja = PowerUp(powerups_folder + os.path.sep + "powerUpAguja.png", enemy.center_x, enemy.center_y, self.tiempo_vida)
             self.powerUpListAguja.append(self.powerUpAguja)
 
         elif number == 1:
-            self.powerUpTriple = arcade.Sprite(powerups_folder + os.path.sep + "powerUpTriple.png",
-                                               center_x=enemy.center_x,
-                                               center_y=enemy.center_y)
+            self.powerUpTriple = PowerUp(powerups_folder + os.path.sep + "powerUpTriple.png", enemy.center_x, enemy.center_y, self.tiempo_vida)
             self.powerUpListTriple.append(self.powerUpTriple)
 
         elif number == 2:
-            self.powerUpLejia = arcade.Sprite(powerups_folder + os.path.sep + "poweUpLejia.png",
-                                              center_x=enemy.center_x,
-                                              center_y=enemy.center_y)
+            self.powerUpLejia = PowerUp(powerups_folder + os.path.sep + "poweUpLejia.png", enemy.center_x, enemy.center_y, self.tiempo_vida)
             self.powerUpListLejia.append(self.powerUpLejia)
 
         elif 3 <= number <= 4:
             self.lista_monedas.append(
-                Moneda(powerups_folder + os.path.sep + "moneda1.png", 1, enemy.center_x, enemy.center_y))
+                Moneda(powerups_folder + os.path.sep + "moneda1.png", 1, enemy.center_x, enemy.center_y, self.tiempo_vida))
 
         elif number == 5:
             self.lista_monedas.append(
-                Moneda(powerups_folder + os.path.sep + "moneda5.png", 5, enemy.center_x, enemy.center_y))
-
-        else:
-            pass
+                Moneda(powerups_folder + os.path.sep + "moneda5.png", 5, enemy.center_x, enemy.center_y, self.tiempo_vida))
 
     def powerUps_coins_update(self, delta_time):
 
         # powerUp legia
-        for self.powerUpLejia in self.powerUpListLejia:
-            if arcade.check_for_collision_with_list(self.player_sprite, self.powerUpListLejia):
+        for powerUpLejia in self.powerUpListLejia:
+            powerUpLejia.tiempo_vida -= 1 * delta_time
+            if powerUpLejia.tiempo_vida <= 0:
+                powerUpLejia.kill()
+            elif arcade.check_for_collision_with_list(self.player_sprite, self.powerUpListLejia):
                 self.legia = True
-                self.powerUpLejia.kill()
+                powerUpLejia.kill()
 
         if self.legia:
             for enemy in self.enemy_list:
@@ -1654,10 +1657,13 @@ class Game(arcade.View):
                     self.legia = False
 
         # powerUp triple disparo
-        for self.powerUpTriple in self.powerUpListTriple:
-            if arcade.check_for_collision_with_list(self.player_sprite, self.powerUpListTriple):
+        for powerUpTriple in self.powerUpListTriple:
+            powerUpTriple.tiempo_vida -= 1 * delta_time
+            if powerUpTriple.tiempo_vida <= 0:
+                powerUpTriple.kill()
+            elif arcade.check_for_collision_with_list(self.player_sprite, self.powerUpListTriple):
                 self.triple = True
-                self.powerUpTriple.kill()
+                powerUpTriple.kill()
 
         if self.triple:
             self.cd_triple += delta_time
@@ -1666,9 +1672,12 @@ class Game(arcade.View):
                 self.cd_triple = 0
 
         # powerUp agujas
-        for self.powerUpAguja in self.powerUpListAguja:
-            if arcade.check_for_collision_with_list(self.player_sprite, self.powerUpListAguja):
-                self.powerUpAguja.kill()
+        for powerUpAguja in self.powerUpListAguja:
+            powerUpAguja.tiempo_vida -= 1 * delta_time
+            if powerUpAguja.tiempo_vida <= 0:
+                powerUpAguja.kill()
+            elif arcade.check_for_collision_with_list(self.player_sprite, self.powerUpListAguja):
+                powerUpAguja.kill()
                 self.dissapear = False
 
         if not self.dissapear:
@@ -1678,7 +1687,10 @@ class Game(arcade.View):
                 self.cd_dissapear = 0
 
         for coin in self.lista_monedas:
-            if arcade.check_for_collision(self.player_sprite, coin):
+            coin.tiempo_vida -= 1 * delta_time
+            if coin.tiempo_vida <= 0:
+                coin.kill()
+            elif arcade.check_for_collision(self.player_sprite, coin):
                 self.player_sprite.money += coin.valor
                 coin.kill()
 
