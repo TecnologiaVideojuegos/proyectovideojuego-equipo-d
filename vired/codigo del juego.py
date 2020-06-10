@@ -1,4 +1,6 @@
 import math
+import time
+
 import arcade
 from random import *
 import os.path
@@ -111,8 +113,8 @@ class MainCharacter(Character):
 
         if self.go_down or self.go_right or self.go_left or self.go_up:
             if self.counter % 20 == 0:
-                move = arcade.load_sound(sound_folder + os.path.sep + "move.wav")
-                arcade.play_sound(move)
+                sound = arcade.Sound(sound_folder + os.path.sep + "move.wav")
+                sound.play(0.10)
 
         self.counter += 2
         # main character movement
@@ -159,6 +161,7 @@ class PowerUp(arcade.Sprite):
         self.center_x = pos_x
         self.center_y = pos_y
         self.tiempo_vida = tiempo_vida
+
 
 class Boss(arcade.Sprite):
     def __init__(self, filename, scale, pos_x, pos_y, number_of_hearts, speed):
@@ -568,11 +571,6 @@ class Game(arcade.View):
         self.boss_triple = False
         self.boss_enemy = False
 
-        self.music = None
-        self.music_bool = True
-
-        self.music_0 = False
-
         # booleans
         self.jeringa1_activa = True
         self.jeringa2_activa = False
@@ -583,6 +581,12 @@ class Game(arcade.View):
         self.vida = None
         self.vida_2 = None
         self.rectangle_right_hearts = None
+
+        # music
+        self.music_list = []
+        self.current_song = 0
+        self.music = None
+        self.new_room = None
 
     def setup(self):
         """
@@ -616,10 +620,9 @@ class Game(arcade.View):
         self.lista_monedas = arcade.SpriteList()
 
         self.background = arcade.SpriteList()
-        self.music_list = []
 
         # Set up the player
-        self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling,
+        self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling*0.9,
                                            3, 200)
         self.player_list.append(self.player_sprite)
 
@@ -638,7 +641,7 @@ class Game(arcade.View):
         # Set up counters
         self.score = 0
         # -------------------------------------------------------------------------------
-        self.time = 60
+        self.time = 5
         self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
@@ -646,6 +649,8 @@ class Game(arcade.View):
         self.tiempo_vida = 5
 
         self.rectangle_right_hearts = 540
+        self.new_room = 0
+        self.play_song()
 
     def reset_things(self):
 
@@ -688,12 +693,6 @@ class Game(arcade.View):
         # enemies
         self.create_enemies()
 
-        bool_music = True
-        if bool_music:
-            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room1-2.wav")
-            arcade.play_sound(self.music)
-            return bool_music == False
-
     def room_1(self):
         # load map
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta1.tmx")
@@ -721,12 +720,6 @@ class Game(arcade.View):
 
         # enemies
         self.create_enemies()
-
-        bool_music = True
-        if bool_music:
-            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room1-2.wav")
-            arcade.play_sound(self.music)
-            return bool_music == False
 
     def room_2(self):
         # load map
@@ -761,12 +754,6 @@ class Game(arcade.View):
         # enemies
         self.create_enemies()
 
-        bool_music = True
-        if bool_music:
-            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room3-4.wav")
-            arcade.play_sound(self.music)
-            return bool_music == False
-
     def room_3(self):
         # load map
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta3.tmx")
@@ -796,12 +783,6 @@ class Game(arcade.View):
 
         # enemies
         self.create_enemies()
-
-        bool_music = True
-        if bool_music:
-            self.music = arcade.load_sound(music_folder + os.path.sep + "music_room3-4.wav")
-            arcade.play_sound(self.music)
-            return bool_music == False
 
     def rooftop(self):
         # load map
@@ -836,7 +817,6 @@ class Game(arcade.View):
             self.cosas.draw()
             self.obstaculos.draw()
             self.escaleras.draw()
-
 
         # Room 1
         if self.current_room == 1:
@@ -910,8 +890,6 @@ class Game(arcade.View):
                 self.player_sprite.center_y = 620
                 self.player_sprite.center_x = 448
                 self.shop.kill()
-            if not self.finish_0:
-                self.player_sprite.center_y = 630
 
         # Entrance -> Shop
         if self.player_sprite.center_x <= 0 and self.current_room == 0:
@@ -1063,6 +1041,16 @@ class Game(arcade.View):
                 self.shop_list.append(self.shop)
             if len(self.enemy_list) > 0:
                 self.finish_0 = False
+            if self.player_sprite.center_y <= 10:
+                self.player_sprite.center_y = 10
+            if self.player_sprite.center_x >= 630:
+                self.player_sprite.center_x = 630
+
+            if not self.finish_0:
+                if self.player_sprite.center_y >= 630:
+                    self.player_sprite.center_y = 630
+                if self.player_sprite.center_x <= 10:
+                    self.player_sprite.center_x = 10
 
         # Room 1
         if self.current_room == 1:
@@ -1080,6 +1068,16 @@ class Game(arcade.View):
             for bullet in self.bullet_list:
                 if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(bullet, self.obstaculos_2):
                     bullet.kill()
+            if self.player_sprite.center_y <= 10:
+                self.player_sprite.center_y = 10
+            if self.player_sprite.center_x >= 630:
+                self.player_sprite.center_x = 630
+
+            if not self.finish_1:
+                if self.player_sprite.center_y >= 630:
+                    self.player_sprite.center_y = 630
+                if self.player_sprite.center_x <= 10:
+                    self.player_sprite.center_x = 10
 
         # Room 2
         if self.current_room == 2:
@@ -1101,6 +1099,17 @@ class Game(arcade.View):
                 if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(
                         bullet, self.obstaculos_2) or arcade.check_for_collision_with_list(bullet, self.cuerpos):
                     bullet.kill()
+            if self.player_sprite.center_y <= 20:
+                self.player_sprite.center_y = 20
+            if self.player_sprite.center_x >= 630:
+                self.player_sprite.center_x = 630
+
+            if not self.finish_2:
+                if self.player_sprite.center_y >= 630:
+                    self.player_sprite.center_y = 630
+                if self.player_sprite.center_x <= 10:
+                    self.player_sprite.center_x = 10
+
 
         # Room 3
         if self.current_room == 3:
@@ -1119,6 +1128,16 @@ class Game(arcade.View):
                 self.shop_list.append(self.shop)
             if len(self.enemy_list) > 0:
                 self.finish_3 = False
+            if self.player_sprite.center_y <= 10:
+                self.player_sprite.center_y = 10
+            if self.player_sprite.center_x >= 630:
+                self.player_sprite.center_x = 630
+
+            if not self.finish_3:
+                if self.player_sprite.center_y >= 630:
+                    self.player_sprite.center_y = 630
+                if self.player_sprite.center_x <= 10:
+                    self.player_sprite.center_x = 10
 
         # Rooftop & tienda
         if self.current_room == 4 or self.current_room == 6:
@@ -1192,13 +1211,13 @@ class Game(arcade.View):
 
                     if foe_choice == 0:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                                      1, pos_x, pos_y, 2, 1)
+                                      1, pos_x, pos_y, 2, 0.5)
                     elif foe_choice == 1:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
                                       1, pos_x, pos_y, 3, 1)
                     elif foe_choice == 2:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                                      1, pos_x, pos_y, 5, 1)
+                                      1, pos_x, pos_y, 5, 1.5)
 
                     self.enemy_list.append(enemy)
 
@@ -1234,7 +1253,7 @@ class Game(arcade.View):
         if self.time_quotient < 0:
             self.max_enemies = 0
             self.start = False
-            self.time = 60
+            self.time = 5
             self.enemy_death = True
 
     def create_boss(self):
@@ -1340,8 +1359,8 @@ class Game(arcade.View):
 
         if direction == "right" or direction == "left" or direction == "up" or direction == "down" or \
                 direction == "right_up" or direction == "right_down" or direction == "left_up" or direction == "left_down":
-            shoot = arcade.load_sound(sound_folder + os.path.sep + "disparo.wav")
-            arcade.play_sound(shoot)
+            sound = arcade.Sound(sound_folder + os.path.sep + "disparo.wav")
+            sound.play(0.15)
 
         if direction == "right":
             bullet.center_x = self.weapon.center_x + 10
@@ -1452,7 +1471,6 @@ class Game(arcade.View):
                 self.shoot("down", None)
 
     def collision(self, delta_time):
-
         # collision enemy-player, enemy-enemy and death
         for enemy in self.enemy_list:
             # game over if player is hit
@@ -1468,25 +1486,15 @@ class Game(arcade.View):
                     game_over = GameOver()
                     self.window.show_view(game_over)
                     if music:
-                        game_over = arcade.load_sound(music_folder + os.path.sep + "game_over.wav")
-                        arcade.play_sound(game_over)
+                        self.music.stop()
+                        sound = arcade.Sound(music_folder + os.path.sep + "game_over.wav")
+                        sound.play(0.15)
                         return music == False
-
-            # enemy movement
-            enemy.movement(self.player_sprite)
 
             # enemies physics
             self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
             for i in range(len(self.collision_enemy)):
-                self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
-
-            # bullet disappears, not creation of enemies and the stop
-            if self.movement:
-                enemy.speed = 0
-                self.max_enemies = len(self.enemy_list)
-                if self.dissapear:
-                    for bullet in self.bullet_list:
-                        bullet.kill()
+                 self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
 
         # collisions bullet - enemy
         for bullet in self.bullet_list:
@@ -1511,17 +1519,20 @@ class Game(arcade.View):
                     self.score += 1
                     music = True
                     if music:
-                        death = arcade.load_sound(sound_folder + os.path.sep + "death.wav")
-                        arcade.play_sound(death)
+                        sound = arcade.Sound(sound_folder + os.path.sep + "death.wav")
+                        sound.play(0.15)
                         return music == False
             collision_bullet_boss = arcade.check_for_collision_with_list(bullet, self.boss_list)
             for boss in collision_bullet_boss:
                 bullet.kill()
+                self.rectangle_right_hearts -= 4.4
                 if boss.number_of_hearts > 0:
                     boss.number_of_hearts -= 1
-                    self.rectangle_right_hearts -= 4.4
                 if boss.number_of_hearts == 0:
                     boss.kill()
+                    self.music.stop()
+                    sound = arcade.Sound(music_folder + os.path.sep + "victory.wav")
+                    sound.play(0.15)
                     win = Winner()
                     self.window.show_view(win)
 
@@ -1699,6 +1710,34 @@ class Game(arcade.View):
             arcade.Sprite(sprites_folder + os.path.sep + "protagonista.png", 1, center_x=550 + i, center_y=30).draw()
             i += 20
 
+    def advance_song(self):
+        """ Advance our pointer to the next song. This does NOT start the song. """
+        self.current_song += 1
+        if self.current_song >= len(self.music_list):
+            self.current_song = 0
+
+    def play_song(self):
+        """ Play the song. """
+        # Stop what is currently playing.
+        if self.music:
+            self.music.stop()
+        if self.current_room == 0 or self.current_room == 1:
+            self.music_list = [music_folder + os.path.sep + "music_room1-2.wav"]
+        if self.current_room == 2 or self.current_room == 3:
+            self.music_list = [music_folder + os.path.sep + "music_room3-4.wav"]
+        if self.current_room == 6:
+            self.music_list = [music_folder + os.path.sep + "music_shop.wav"]
+        if self.current_room == 4:
+            self.music_list = [music_folder + os.path.sep + "music_room_boss.wav"]
+
+        # Play the next song
+        self.music = arcade.Sound(self.music_list[self.current_song], streaming=True)
+        self.music.play(0.05)
+        # This is a quick delay. If we don't do this, our elapsed time is 0.0
+        # and on_update will think the music is over and advance us to the next
+        # song before starting this one.
+        time.sleep(0.03)
+
     def on_update(self, delta_time):
         """ Movement and game logic """  # collisions go here
 
@@ -1719,6 +1758,17 @@ class Game(arcade.View):
 
         # provisional
         self.update_shooting(self.player_sprite)
+
+        position = self.music.get_stream_position()
+
+        if position == 0.0 or (self.current_room != self.new_room):
+            self.new_room = self.current_room
+            self.advance_song()
+            self.play_song()
+
+        # enemy movement
+        for enemy in self.enemy_list:
+            enemy.movement(self.player_sprite)
 
         for weapon in self.weapon_list:
             weapon.update_self(self.player_sprite, delta_time)
@@ -1747,7 +1797,7 @@ class Game(arcade.View):
 
         # contadores
         arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
-        arcade.draw_text(f"Time wave: {int(self.time_quotient)}", 400, 615, arcade.color.WHITE, 15)
+        arcade.draw_text(f"Time wave: {self.time_quotient}", 400, 615, arcade.color.WHITE, 15)
         arcade.draw_text(f": {self.player_sprite.money}", 490, 20, arcade.color.WHITE, 15)
 
         # dibujar vidas personaje
