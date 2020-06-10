@@ -18,6 +18,7 @@ sprites_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + o
 bullet_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "armas"
 powerups_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "powerups"
 resources_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites"
+boss_hearts_folder = path2 + os.path.sep + "resources" + os.path.sep + "sprites" + os.path.sep + "vida boss"
 maps_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps"
 layer_folder = path2 + os.path.sep + "resources" + os.path.sep + "maps" + os.path.sep + "layers"
 music_folder = path2 + os.path.sep + "resources" + os.path.sep + "newmusic"
@@ -199,10 +200,10 @@ class Item(arcade.Sprite):
 
 
 class Tienda:
-    objetos_planta_baja = [] # bisturi && botas
-    objetos_planta1 = [] # jeringa2 && botas && bisturi
-    objetos_planta2 = [] # jergina3 && botas
-    objetos_planta3 = [] # escalpelo electrico && corazon
+    objetos_planta_baja = []  # bisturi && botas
+    objetos_planta1 = []  # jeringa2 && botas && bisturi
+    objetos_planta2 = []  # jergina3 && botas
+    objetos_planta3 = []  # escalpelo electrico && corazon
 
     def __init__(self):
         self.tendero = arcade.Sprite(sprites_folder + os.path.sep + "tendero.png", sprite_scaling,
@@ -427,7 +428,7 @@ class Credits(arcade.View):
         arcade.draw_text("CREDITOS", screen_width / 2, 530,
                          arcade.color.WHITE, font_size=60, anchor_x="center", align="center")
         arcade.draw_text("Jefe de Proyecto: Óscar García\n\nProgramadores: Fernando Parra\n\n\n\nDiseño: Diego "
-                         "Plaza\n\nSonido: Alejandro Cedillo\n\nTester: Juan Carlos", screen_width / 2, 150,
+                         "Plaza\n\nSonido: Alejandro Cedillo\n\nTester: Juan Carlos Sainz", screen_width / 2, 150,
                          arcade.color.WHITE, font_size=30, anchor_x="center", align="left")
         arcade.draw_text("Jorge Fernández", 330, 330,
                          arcade.color.WHITE, font_size=30)
@@ -435,16 +436,16 @@ class Credits(arcade.View):
                          arcade.color.WHITE, font_size=15)
 
     def on_key_press(self, key, _modifiers):
-            if key == arcade.key.ESCAPE:
-                menu_view = Menu()
-                self.window.show_view(menu_view)
-            if key == arcade.key.R:
-                game_view = Game()
-                game_view.setup()
-                self.window.show_view(game_view)
-            if key == arcade.key.ENTER:
-                win = Winner()
-                self.window.show_view(win)
+        if key == arcade.key.ESCAPE:
+            menu_view = Menu()
+            self.window.show_view(menu_view)
+        if key == arcade.key.R:
+            game_view = Game()
+            game_view.setup()
+            self.window.show_view(game_view)
+        if key == arcade.key.ENTER:
+            win = Winner()
+            self.window.show_view(win)
 
 
 class Winner(arcade.View):
@@ -459,16 +460,16 @@ class Winner(arcade.View):
                          arcade.color.WHITE, font_size=30, anchor_x="center", align="center")
 
     def on_key_press(self, key, _modifiers):
-            if key == arcade.key.ESCAPE:
-                menu_view = Menu()
-                self.window.show_view(menu_view)
-            if key == arcade.key.R:
-                game_view = Game()
-                game_view.setup()
-                self.window.show_view(game_view)
-            if key == arcade.key.ENTER:
-                credit = Credits()
-                self.window.show_view(credit)
+        if key == arcade.key.ESCAPE:
+            menu_view = Menu()
+            self.window.show_view(menu_view)
+        if key == arcade.key.R:
+            game_view = Game()
+            game_view.setup()
+            self.window.show_view(game_view)
+        if key == arcade.key.ENTER:
+            credit = Credits()
+            self.window.show_view(credit)
 
 
 class Game(arcade.View):
@@ -579,8 +580,7 @@ class Game(arcade.View):
 
         # Roof vida
         self.vida = None
-        self.vida_2 = None
-        self.rectangle_right_hearts = None
+        self.vida_list = None
 
         # music
         self.music_list = []
@@ -613,6 +613,7 @@ class Game(arcade.View):
         self.shop_list = arcade.SpriteList()
         self.boss_list = arcade.SpriteList()
         self.bullet_boss = arcade.SpriteList()
+        self.vida_list = arcade.SpriteList()
 
         self.powerUpListAguja = arcade.SpriteList()
         self.powerUpListTriple = arcade.SpriteList()
@@ -622,7 +623,7 @@ class Game(arcade.View):
         self.background = arcade.SpriteList()
 
         # Set up the player
-        self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling*0.9,
+        self.player_sprite = MainCharacter(sprites_folder + os.path.sep + "protagonista.png", sprite_scaling * 0.9,
                                            3, 200)
         self.player_list.append(self.player_sprite)
 
@@ -641,14 +642,13 @@ class Game(arcade.View):
         # Set up counters
         self.score = 0
         # -------------------------------------------------------------------------------
-        self.time = 5
+        self.time = 11
         self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
         self.cd_triple = 0
         self.tiempo_vida = 5
 
-        self.rectangle_right_hearts = 540
         self.new_room = 0
         self.play_song()
 
@@ -795,6 +795,8 @@ class Game(arcade.View):
         self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
         self.suelo = arcade.tilemap.process_layer(my_map, "suelo", 1)
         self.escaleras = arcade.tilemap.process_layer(my_map, "escalera", 1)
+        self.vida = arcade.Sprite(boss_hearts_folder + os.path.sep + "vida boss 100.png", center_x=320, center_y=550)
+        self.vida_list.append(self.vida)
 
         # physics layers and player
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
@@ -803,10 +805,19 @@ class Game(arcade.View):
 
     def shop_room(self):
         # load map
-        arcade.tilemap.read_tmx(maps_folder + os.path.sep + "tienda.tmx")
+        my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "tienda.tmx")
+
+        # load layers
+        self.paredes = arcade.tilemap.process_layer(my_map, "paredes", 1)
+        self.obstaculos_2 = arcade.tilemap.process_layer(my_map, "obstaculos 2", 1)
+        self.obstaculos = arcade.tilemap.process_layer(my_map, "obstaculos", 1)
+        self.botes = arcade.tilemap.process_layer(my_map, "botes", 1)
+        self.suelo = arcade.tilemap.process_layer(my_map, "suelo", 1)
 
         # physics layers and player
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
+        self.physics_obstaculos = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos)
+        self.physics_obstaculos2 = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos_2)
 
     def room_draw(self):
         # drawing layers
@@ -851,25 +862,19 @@ class Game(arcade.View):
             self.paredes.draw()
             self.suelo.draw()
             self.escaleras.draw()
-            self.vida = arcade.draw_lrtb_rectangle_filled(100, 540, 600, 575,
-                                                          arcade.csscolor.RED)
-            self.vida = arcade.draw_lrtb_rectangle_filled(100, self.rectangle_right_hearts, 600, 575,
-                                                          arcade.csscolor.GREEN)
-
-        if self.current_room == 5:
-            self.paredes.draw()
-            self.suelo.draw()
-            self.obstaculos.draw()
-            self.obstaculos_2.draw()
-            self.botes.draw()
+            self.vida_list.draw()
 
         # Tienda
         if self.current_room == 6:
             self.paredes.draw()
             self.suelo.draw()
+            self.obstaculos.draw()
+            self.obstaculos_2.draw()
+            self.botes.draw()
             self.tienda.draw_tendero()
-            arcade.draw_text("TENDERO: Compra algunos de estos productos que te pueden ayudar", 45, 105, arcade.color.BLACK, 15)
-            arcade.draw_text("a derrotar al virus", 45, 75, arcade.color.BLACK, 15)
+            arcade.draw_text("TENDERO: Compra algunos de estos productos que te pueden ayudar", 60, 500,
+                             arcade.color.BLACK, 15)
+            arcade.draw_text("a derrotar al virus", 60, 475, arcade.color.BLACK, 15)
             if self.selling == 0:
                 self.tienda.draw_obj_planta_baja()
             elif self.selling == 1:
@@ -880,7 +885,6 @@ class Game(arcade.View):
                 self.tienda.draw_obj_planta3()
 
     def room_update(self):
-
         # map update
         # Entrance -> Room 1
         if self.player_sprite.center_y > 630 and 323 < self.player_sprite.center_x < 380 and self.current_room == 0:
@@ -1031,7 +1035,9 @@ class Game(arcade.View):
             self.physics_cosas.update()
             self.physics_obstaculos.update()
             for bullet in self.bullet_list:
-                if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(bullet, self.cosas):
+                if arcade.check_for_collision_with_list(bullet,
+                                                        self.obstaculos) or arcade.check_for_collision_with_list(bullet,
+                                                                                                                 self.cosas):
                     bullet.kill()
             if len(self.enemy_list) == 0 and self.enemy_death:
                 self.enemy_death = False
@@ -1066,7 +1072,9 @@ class Game(arcade.View):
             if len(self.enemy_list) > 0:
                 self.finish_1 = False
             for bullet in self.bullet_list:
-                if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(bullet, self.obstaculos_2):
+                if arcade.check_for_collision_with_list(bullet,
+                                                        self.obstaculos) or arcade.check_for_collision_with_list(bullet,
+                                                                                                                 self.obstaculos_2):
                     bullet.kill()
             if self.player_sprite.center_y <= 10:
                 self.player_sprite.center_y = 10
@@ -1096,7 +1104,8 @@ class Game(arcade.View):
             if len(self.enemy_list) > 0:
                 self.finish_2 = False
             for bullet in self.bullet_list:
-                if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(
+                if arcade.check_for_collision_with_list(bullet,
+                                                        self.obstaculos) or arcade.check_for_collision_with_list(
                         bullet, self.obstaculos_2) or arcade.check_for_collision_with_list(bullet, self.cuerpos):
                     bullet.kill()
             if self.player_sprite.center_y <= 20:
@@ -1110,7 +1119,6 @@ class Game(arcade.View):
                 if self.player_sprite.center_x <= 10:
                     self.player_sprite.center_x = 10
 
-
         # Room 3
         if self.current_room == 3:
             self.physics_paredes.update()
@@ -1118,7 +1126,9 @@ class Game(arcade.View):
             self.physics_cuerpos.update()
             self.physics_obstaculos.update()
             for bullet in self.bullet_list:
-                if arcade.check_for_collision_with_list(bullet, self.obstaculos) or arcade.check_for_collision_with_list(bullet, self.cuerpos):
+                if arcade.check_for_collision_with_list(bullet,
+                                                        self.obstaculos) or arcade.check_for_collision_with_list(bullet,
+                                                                                                                 self.cuerpos):
                     bullet.kill()
             if len(self.enemy_list) == 0 and self.enemy_death:
                 self.enemy_death = False
@@ -1139,8 +1149,13 @@ class Game(arcade.View):
                 if self.player_sprite.center_x <= 10:
                     self.player_sprite.center_x = 10
 
-        # Rooftop & tienda
-        if self.current_room == 4 or self.current_room == 6:
+        if self.current_room == 6:
+            self.physics_paredes.update()
+            self.physics_obstaculos.update()
+            self.physics_obstaculos2.update()
+
+        # Rooftop
+        if self.current_room == 4:
             self.physics_paredes.update()
 
     def create_enemies(self):
@@ -1494,7 +1509,7 @@ class Game(arcade.View):
             # enemies physics
             self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
             for i in range(len(self.collision_enemy)):
-                 self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
+                self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
 
         # collisions bullet - enemy
         for bullet in self.bullet_list:
@@ -1524,13 +1539,13 @@ class Game(arcade.View):
                         return music == False
             collision_bullet_boss = arcade.check_for_collision_with_list(bullet, self.boss_list)
             for boss in collision_bullet_boss:
+                self.update_hearts_bar(boss)
                 bullet.kill()
-                self.rectangle_right_hearts -= 4.4
                 if boss.number_of_hearts > 0:
                     boss.number_of_hearts -= 1
                 if boss.number_of_hearts == 0:
-                    boss.kill()
                     self.music.stop()
+                    boss.kill()
                     sound = arcade.Sound(music_folder + os.path.sep + "victory.wav")
                     sound.play(0.15)
                     win = Winner()
@@ -1568,7 +1583,8 @@ class Game(arcade.View):
                                 item.recogido = True
                                 self.weapon.kill()
                                 self.weapon = Weapon(bullet_folder + os.path.sep + "jeringa2.png",
-                                                     self.player_sprite.center_x + 15, self.player_sprite.center_y - 5, 90)
+                                                     self.player_sprite.center_x + 15, self.player_sprite.center_y - 5,
+                                                     90)
                                 self.weapon_list.append(self.weapon)
                                 self.jeringa1_activa = False
                                 self.jeringa3_activa = False
@@ -1629,24 +1645,29 @@ class Game(arcade.View):
     def powerUps_drop(self, enemy, number):
 
         if number == 0:
-            self.powerUpAguja = PowerUp(powerups_folder + os.path.sep + "powerUpAguja.png", enemy.center_x, enemy.center_y, self.tiempo_vida)
+            self.powerUpAguja = PowerUp(powerups_folder + os.path.sep + "powerUpAguja.png", enemy.center_x,
+                                        enemy.center_y, self.tiempo_vida)
             self.powerUpListAguja.append(self.powerUpAguja)
 
         elif number == 1:
-            self.powerUpTriple = PowerUp(powerups_folder + os.path.sep + "powerUpTriple.png", enemy.center_x, enemy.center_y, self.tiempo_vida)
+            self.powerUpTriple = PowerUp(powerups_folder + os.path.sep + "powerUpTriple.png", enemy.center_x,
+                                         enemy.center_y, self.tiempo_vida)
             self.powerUpListTriple.append(self.powerUpTriple)
 
         elif number == 2:
-            self.powerUpLejia = PowerUp(powerups_folder + os.path.sep + "poweUpLejia.png", enemy.center_x, enemy.center_y, self.tiempo_vida)
+            self.powerUpLejia = PowerUp(powerups_folder + os.path.sep + "poweUpLejia.png", enemy.center_x,
+                                        enemy.center_y, self.tiempo_vida)
             self.powerUpListLejia.append(self.powerUpLejia)
 
         elif 3 <= number <= 4:
             self.lista_monedas.append(
-                Moneda(powerups_folder + os.path.sep + "moneda1.png", 1, enemy.center_x, enemy.center_y, self.tiempo_vida))
+                Moneda(powerups_folder + os.path.sep + "moneda1.png", 1, enemy.center_x, enemy.center_y,
+                       self.tiempo_vida))
 
         elif number == 5:
             self.lista_monedas.append(
-                Moneda(powerups_folder + os.path.sep + "moneda5.png", 5, enemy.center_x, enemy.center_y, self.tiempo_vida))
+                Moneda(powerups_folder + os.path.sep + "moneda5.png", 5, enemy.center_x, enemy.center_y,
+                       self.tiempo_vida))
 
     def powerUps_coins_update(self, delta_time):
 
@@ -1709,6 +1730,36 @@ class Game(arcade.View):
         for heart in range(self.player_sprite.number_of_hearts):
             arcade.Sprite(sprites_folder + os.path.sep + "protagonista.png", 1, center_x=550 + i, center_y=30).draw()
             i += 20
+
+    def update_hearts_bar(self, boss):
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 90.png"))
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 80.png"))
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 70.png"))
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 60.png"))
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 50.png"))
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 40.png"))
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 30.png"))
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 20.png"))
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 10.png"))
+        self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 0.png"))
+        if 80 < boss.number_of_hearts < 90:
+            self.vida.set_texture(1)
+        if 70 < boss.number_of_hearts < 80:
+            self.vida.set_texture(2)
+        if 60 < boss.number_of_hearts < 70:
+            self.vida.set_texture(3)
+        if 50 < boss.number_of_hearts < 60:
+            self.vida.set_texture(4)
+        if 40 < boss.number_of_hearts < 50:
+            self.vida.set_texture(5)
+        if 30 < boss.number_of_hearts < 40:
+            self.vida.set_texture(6)
+        if 20 < boss.number_of_hearts < 30:
+            self.vida.set_texture(7)
+        if 10 < boss.number_of_hearts < 20:
+            self.vida.set_texture(8)
+        if 0 < boss.number_of_hearts < 10:
+            self.vida.set_texture(9)
 
     def advance_song(self):
         """ Advance our pointer to the next song. This does NOT start the song. """
@@ -1784,6 +1835,7 @@ class Game(arcade.View):
         self.powerUpListAguja.update()
         self.powerUpListTriple.update()
         self.powerUpListLejia.update()
+        self.vida_list.update()
 
     def on_draw(self):
         """
