@@ -50,7 +50,7 @@ class MainCharacter(Character):
         self.shooting_left = None
         self.shooting_up = None
         self.shooting_down = None
-        self.money = 40
+        self.money = 0
 
         self.counter = 0
 
@@ -642,7 +642,7 @@ class Game(arcade.View):
         # Set up counters
         self.score = 0
         # -------------------------------------------------------------------------------
-        self.time = 11
+        self.time = 60
         self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
