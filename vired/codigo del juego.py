@@ -1268,7 +1268,7 @@ class Game(arcade.View):
         if self.time_quotient < 0:
             self.max_enemies = 0
             self.start = False
-            self.time = 5
+            self.time = 60
             self.enemy_death = True
 
     def create_boss(self):
