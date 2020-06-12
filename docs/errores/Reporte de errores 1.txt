@@ -1,0 +1,14 @@
+Creo que la comprobación de colisiones de los proyectiles es lo que cause el lag, ya que al principio de la partida, no
+hay lag, pero con el cambio de las salas se va "acumulando" lag, hasta el punto que es injugable
+
+En mi opinión, debería haber más enemigos, pero menos fuertes, para que se te obligue a moverte más por el mapa.
+Esto se puede conseguir bajando 1-2 puntos de vida y aumentando el ratio de spawn
+
+Aparecen demasiados powerUps, y muy pocas monedas, es por eso que creo que habría que cambiar los ratios para que la compra en la
+tienda esté relativamente asegurada
+
+La jeringuilla roja se buggea, y no sigue la orientación del jugador
+
+El boss debería estar un poco más alto, de modo que no puedas ponerte a la izquierda del todo a hacer daño sin penalización
+
+La música no para ni cuando mueres, ni cuando ganas, ni cuando sales al menú principal desde el menú de inicio

@@ -1,4 +1,4 @@
-# Página principal de Vire-ed *(Nombre Provisional)*
+# Página principal de Vired
 ## 
 ### Proyecto de Tecnología de Videojuegos del Equipo D
 En este repositorio se encuentran los archivos del videojuego desarrollado por el Equipo D.
