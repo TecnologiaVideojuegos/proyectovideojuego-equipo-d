@@ -392,7 +392,6 @@ class GameOver(arcade.View):
 
 
 class Pause(arcade.View):
-
     def __init__(self, game_view):
         super().__init__()
         self.game_view = game_view
@@ -1226,13 +1225,13 @@ class Game(arcade.View):
 
                     if foe_choice == 0:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                                      1, pos_x, pos_y, 2, 0.5)
+                                      1, pos_x, pos_y, 1.5, 1.5)
                     elif foe_choice == 1:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                                      1, pos_x, pos_y, 3, 1)
+                                      1, pos_x, pos_y, 2, 1.25)
                     elif foe_choice == 2:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                                      1, pos_x, pos_y, 5, 1.5)
+                                      1, pos_x, pos_y, 3.5, 1)
 
                     self.enemy_list.append(enemy)
 
@@ -1257,13 +1256,13 @@ class Game(arcade.View):
 
     def waves(self):
         if 40 <= self.time_quotient <= 59:
-            if self.spawn_cd % 190 == 0:
+            if self.spawn_cd % 120 == 0:
                 self.create_enemies()
         if 10 <= self.time_quotient <= 40:
-            if self.spawn_cd % 160 == 0:
+            if self.spawn_cd % 90 == 0:
                 self.create_enemies()
         if 10 >= self.time_quotient:
-            if self.spawn_cd % 130 == 0:
+            if self.spawn_cd % 60 == 0:
                 self.create_enemies()
         if self.time_quotient < 0:
             self.max_enemies = 0
@@ -1272,12 +1271,13 @@ class Game(arcade.View):
             self.enemy_death = True
 
     def create_boss(self):
-        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 400, 100, 5)
+        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 430, 100, 5, )
         self.boss_list.append(boss)
 
     def update_boss(self):
         for boss in self.boss_list:
             boss.movement()
+            self.update_hearts_bar(boss.number_of_hearts)
             if 80 <= boss.number_of_hearts <= 100:
                 if self.cd % 30 == 0:
                     self.boss_shoot(boss)
@@ -1297,13 +1297,8 @@ class Game(arcade.View):
             if 0 <= boss.number_of_hearts < 25:
                 if self.cd % 30 == 0:
                     self.boss_shoot(boss)
-                if self.spawn_cd % 190 == 0:
+                if self.spawn_cd % 90 == 0:
                     self.create_enemies2(boss, 20, randint(2, 4))
-
-            for enemy in self.enemy_list:
-                self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
-                for i in range(len(self.collision_enemy)):
-                    self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
 
         # collisions player - boss
         for bullet in self.bullet_list:
@@ -1319,11 +1314,8 @@ class Game(arcade.View):
                     boss.kill()
                     winner = Winner()
                     self.window.show_view(winner)
-                    music = True
-                    if music:
-                        victory = arcade.load_sound(music_folder + os.path.sep + "victory.wav")
-                        arcade.play_sound(victory)
-                        return music == False
+                    victory = arcade.load_sound(music_folder + os.path.sep + "victory.wav")
+                    arcade.play_sound(victory)
 
         for bullet in self.bullet_boss:
             if arcade.check_for_collision_with_list(bullet, self.player_list):
@@ -1496,20 +1488,12 @@ class Game(arcade.View):
                 # vuelta al punto central de la pantalla
                 self.player_sprite.respawn()
                 if self.player_sprite.number_of_hearts == 0:
+                    self.music.stop()
+                    sound = arcade.Sound(music_folder + os.path.sep + "game_over.wav")
                     arcade.pause(1)
-                    music = True
+                    sound.play(0.15)
                     game_over = GameOver()
                     self.window.show_view(game_over)
-                    if music:
-                        self.music.stop()
-                        sound = arcade.Sound(music_folder + os.path.sep + "game_over.wav")
-                        sound.play(0.15)
-                        return music == False
-
-            # enemies physics
-            self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
-            for i in range(len(self.collision_enemy)):
-                self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
 
         # collisions bullet - enemy
         for bullet in self.bullet_list:
@@ -1529,33 +1513,22 @@ class Game(arcade.View):
                     elif self.jeringa3_activa:
                         enemy.number_of_hearts -= 3
                 if enemy.number_of_hearts <= 0:
-                    self.powerUps_drop(enemy, randint(0, 19))
+                    self.powerUps_drop(enemy, randint(0, 30))
                     enemy.kill()
                     self.score += 1
-                    music = True
-                    if music:
-                        sound = arcade.Sound(sound_folder + os.path.sep + "death.wav")
-                        sound.play(0.15)
-                        return music == False
-            collision_bullet_boss = arcade.check_for_collision_with_list(bullet, self.boss_list)
-            for boss in collision_bullet_boss:
-                self.update_hearts_bar(boss)
-                bullet.kill()
-                if boss.number_of_hearts > 0:
-                    boss.number_of_hearts -= 1
-                if boss.number_of_hearts == 0:
-                    self.music.stop()
-                    boss.kill()
-                    sound = arcade.Sound(music_folder + os.path.sep + "victory.wav")
+                    sound = arcade.Sound(sound_folder + os.path.sep + "death.wav")
                     sound.play(0.15)
-                    win = Winner()
-                    self.window.show_view(win)
 
         start_the_wave = arcade.check_for_collision_with_list(self.player_sprite, self.bomb_list)
         if start_the_wave and self.space:
             self.bomb.kill()
             self.start = True
 
+        self.powerUps_coins_update(delta_time)
+        self.update_boss()
+        self.update_shop()
+
+    def update_shop(self):
         # objetos tienda
         if self.current_room == 6:
 
@@ -1639,9 +1612,6 @@ class Game(arcade.View):
                                 self.player_sprite.number_of_hearts += 1
                                 item.kill()
 
-        self.powerUps_coins_update(delta_time)
-        self.update_boss()
-
     def powerUps_drop(self, enemy, number):
 
         if number == 0:
@@ -1659,12 +1629,12 @@ class Game(arcade.View):
                                         enemy.center_y, self.tiempo_vida)
             self.powerUpListLejia.append(self.powerUpLejia)
 
-        elif 3 <= number <= 4:
+        elif 3 <= number <= 6:
             self.lista_monedas.append(
                 Moneda(powerups_folder + os.path.sep + "moneda1.png", 1, enemy.center_x, enemy.center_y,
                        self.tiempo_vida))
 
-        elif number == 5:
+        elif 7 <= number <= 9:
             self.lista_monedas.append(
                 Moneda(powerups_folder + os.path.sep + "moneda5.png", 5, enemy.center_x, enemy.center_y,
                        self.tiempo_vida))
@@ -1731,7 +1701,7 @@ class Game(arcade.View):
             arcade.Sprite(sprites_folder + os.path.sep + "protagonista.png", 1, center_x=550 + i, center_y=30).draw()
             i += 20
 
-    def update_hearts_bar(self, boss):
+    def update_hearts_bar(self, hearts):
         self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 90.png"))
         self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 80.png"))
         self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 70.png"))
@@ -1742,23 +1712,23 @@ class Game(arcade.View):
         self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 20.png"))
         self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 10.png"))
         self.vida.append_texture(arcade.load_texture(boss_hearts_folder + os.path.sep + "vida boss 0.png"))
-        if 80 < boss.number_of_hearts < 90:
+        if 80 < hearts < 90:
             self.vida.set_texture(1)
-        if 70 < boss.number_of_hearts < 80:
+        if 70 < hearts < 80:
             self.vida.set_texture(2)
-        if 60 < boss.number_of_hearts < 70:
+        if 60 < hearts < 70:
             self.vida.set_texture(3)
-        if 50 < boss.number_of_hearts < 60:
+        if 50 < hearts < 60:
             self.vida.set_texture(4)
-        if 40 < boss.number_of_hearts < 50:
+        if 40 < hearts < 50:
             self.vida.set_texture(5)
-        if 30 < boss.number_of_hearts < 40:
+        if 30 < hearts < 40:
             self.vida.set_texture(6)
-        if 20 < boss.number_of_hearts < 30:
+        if 20 < hearts < 30:
             self.vida.set_texture(7)
-        if 10 < boss.number_of_hearts < 20:
+        if 10 < hearts < 20:
             self.vida.set_texture(8)
-        if 0 < boss.number_of_hearts < 10:
+        if 0 < hearts < 10:
             self.vida.set_texture(9)
 
     def advance_song(self):
@@ -1820,6 +1790,12 @@ class Game(arcade.View):
         # enemy movement
         for enemy in self.enemy_list:
             enemy.movement(self.player_sprite)
+
+        for enemy in self.enemy_list:
+            # enemies physics
+            self.collision_enemy = arcade.check_for_collision_with_list(enemy, self.enemy_list)
+            for i in range(len(self.collision_enemy)):
+                self.physics_enemy_list = arcade.PhysicsEngineSimple(self.collision_enemy[i], self.enemy_list)
 
         for weapon in self.weapon_list:
             weapon.update_self(self.player_sprite, delta_time)
