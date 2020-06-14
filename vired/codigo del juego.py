@@ -415,10 +415,6 @@ class Pause(arcade.View):
         if key == arcade.key.ESCAPE:
             menu_view = Menu()
             self.window.show_view(menu_view)
-        if key == arcade.key.R:
-            game_view = Game()
-            game_view.setup()
-            self.window.show_view(game_view)
 
 
 class Credits(arcade.View):
@@ -438,13 +434,6 @@ class Credits(arcade.View):
                          arcade.color.WHITE, font_size=15)
 
     def on_key_press(self, key, _modifiers):
-        if key == arcade.key.ESCAPE:
-            menu_view = Menu()
-            self.window.show_view(menu_view)
-        if key == arcade.key.R:
-            game_view = Game()
-            game_view.setup()
-            self.window.show_view(game_view)
         if key == arcade.key.ENTER:
             win = Winner()
             self.window.show_view(win)
@@ -475,6 +464,7 @@ class Winner(arcade.View):
 
 
 class Game(arcade.View):
+
     def __init__(self):
         super().__init__()
 
@@ -1237,13 +1227,13 @@ class Game(arcade.View):
 
                 if foe_choice == 0:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo1.png",
-                                  1, pos_x, pos_y, 1, 1)
+                                  1, pos_x, pos_y, 1.5, 1.5)
                 elif foe_choice == 1:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                                  1, pos_x, pos_y, 2, 1)
+                                  1, pos_x, pos_y, 2.5, 1)
                 elif foe_choice == 2:
                     enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                                  1, pos_x, pos_y, 4, 1)
+                                  1, pos_x, pos_y, 5, 0.5)
 
                 self.enemy_list.append(enemy)
 
@@ -1489,7 +1479,9 @@ class Game(arcade.View):
 
         # collisions bullet - enemy
         for bullet in self.bullet_list:
-            if arcade.check_for_collision_with_list(bullet, self.paredes):
+            if not 10 < bullet.center_x < 630:
+                bullet.kill()
+            if not 10 < bullet.center_y < 630:
                 bullet.kill()
             collision_bullet_enemy = arcade.check_for_collision_with_list(bullet, self.enemy_list)
             # enemy actualization of hearts
@@ -1885,6 +1877,7 @@ class Game(arcade.View):
             self.pause_done = True
             pause_view = Pause(self)
             self.window.show_view(pause_view)
+            self.music.stop()
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W:
