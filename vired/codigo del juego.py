@@ -363,6 +363,7 @@ class Menu(arcade.View):
                          arcade.color.WHITE, font_size=30, anchor_x="center")
         arcade.draw_text("Click para empezar", screen_width // 2, screen_height // 3,
                          arcade.color.WHITE, font_size=30, anchor_x="center")
+        arcade.draw_texture_rectangle(320, 320, 640, 640, arcade.load_texture(pantallas_folder + os.path.sep + "inicio sin botones.jpg"))
 
     def on_mouse_press(self, _x, _y, _button, _modifiers):
         game_view = Game()
@@ -380,6 +381,7 @@ class GameOver(arcade.View):
                          arcade.color.WHITE, 30, anchor_x="center")
         arcade.draw_text("Esc - Menu\n\nR - Reiniciar", screen_width // 2, screen_height // 3,
                          arcade.color.WHITE, font_size=30, anchor_x="center")
+        arcade.draw_texture_rectangle(320, 320, 640, 640, arcade.load_texture(pantallas_folder + os.path.sep + "pantalla muerte.jpg"))
 
     def on_key_press(self, key, _modifiers):
         if key == arcade.key.ESCAPE:
@@ -405,6 +407,7 @@ class Pause(arcade.View):
                          arcade.color.WHITE, 30, anchor_x="center")
         arcade.draw_text("Enter - Reanudar\n\nEsc - Menu\n\nR - Reiniciar", screen_width // 2, screen_height // 4,
                          arcade.color.WHITE, font_size=30, anchor_x="center")
+        arcade.draw_texture_rectangle(320, 320, 640, 640, arcade.load_texture(pantallas_folder + os.path.sep + "pausa sin botones.jpg"))
 
     def on_key_press(self, key, _modifiers):
         if key == arcade.key.ENTER:
@@ -545,12 +548,14 @@ class Game(arcade.View):
         self.start = False
         self.space = False
 
+        # bombs finished
         self.finish_0 = False
         self.finish_1 = False
         self.finish_2 = False
         self.finish_3 = False
         self.enemy_death = False
 
+        # poster shop draw
         self.tienda = None
         self.shop = None
         self.shop_list = None
@@ -689,9 +694,6 @@ class Game(arcade.View):
         self.physics_cosas = arcade.PhysicsEngineSimple(self.player_sprite, self.cosas)
         self.physics_obstaculos = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos)
 
-        # enemies
-        self.create_enemies()
-
     def room_1(self):
         # load map
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta1.tmx")
@@ -716,9 +718,6 @@ class Game(arcade.View):
         self.physics_paredes = arcade.PhysicsEngineSimple(self.player_sprite, self.paredes)
         self.physics_obstaculos = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos)
         self.physics_obstaculos2 = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos_2)
-
-        # enemies
-        self.create_enemies()
 
     def room_2(self):
         # load map
@@ -750,9 +749,6 @@ class Game(arcade.View):
         self.physics_cuerpos = arcade.PhysicsEngineSimple(self.player_sprite, self.cuerpos)
         self.physics_sangre = arcade.PhysicsEngineSimple(self.player_sprite, self.sangre)
 
-        # enemies
-        self.create_enemies()
-
     def room_3(self):
         # load map
         my_map = arcade.tilemap.read_tmx(maps_folder + os.path.sep + "planta3.tmx")
@@ -779,9 +775,6 @@ class Game(arcade.View):
         self.physics_obstaculos = arcade.PhysicsEngineSimple(self.player_sprite, self.obstaculos)
         self.physics_cuerpos = arcade.PhysicsEngineSimple(self.player_sprite, self.cuerpos)
         self.physics_sangre = arcade.PhysicsEngineSimple(self.player_sprite, self.sangre)
-
-        # enemies
-        self.create_enemies()
 
     def rooftop(self):
         # load map
@@ -1228,10 +1221,10 @@ class Game(arcade.View):
                                       1, pos_x, pos_y, 1.5, 1.5)
                     elif foe_choice == 1:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo2.png",
-                                      1, pos_x, pos_y, 2, 1.25)
+                                      1, pos_x, pos_y, 2.5, 1)
                     elif foe_choice == 2:
                         enemy = Enemy(sprites_folder + os.path.sep + "enemigo3.png",
-                                      1, pos_x, pos_y, 3.5, 1)
+                                      1, pos_x, pos_y, 5, 0.5)
 
                     self.enemy_list.append(enemy)
 
@@ -1271,7 +1264,7 @@ class Game(arcade.View):
             self.enemy_death = True
 
     def create_boss(self):
-        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 430, 100, 5, )
+        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 430, 100, 4)
         self.boss_list.append(boss)
 
     def update_boss(self):
@@ -1324,6 +1317,9 @@ class Game(arcade.View):
                     bullet.kill()
                 if self.player_sprite.number_of_hearts == 0:
                     arcade.pause(1)
+                    self.music.stop()
+                    sound = arcade.Sound(music_folder + os.path.sep + "game_over.wav")
+                    sound.play(0.15)
                     game_over = GameOver()
                     self.window.show_view(game_over)
 
@@ -1359,10 +1355,6 @@ class Game(arcade.View):
         elif self.jeringa3_activa:
             bullet = Bullet(bullet_folder + os.path.sep + "gota3.png", sprite_scaling / 2)
         self.bullet_list.append(bullet)
-
-        """if self.current_room == 1:
-            bullet = Bullet(bullet_folder + os.path.sep + "gota2.png", sprite_scaling / 2)
-            self.bullet_list.append(bullet)"""
 
         if direction == "right" or direction == "left" or direction == "up" or direction == "down" or \
                 direction == "right_up" or direction == "right_down" or direction == "left_up" or direction == "left_down":
@@ -1629,12 +1621,12 @@ class Game(arcade.View):
                                         enemy.center_y, self.tiempo_vida)
             self.powerUpListLejia.append(self.powerUpLejia)
 
-        elif 3 <= number <= 6:
+        elif 3 <= number <= 5:
             self.lista_monedas.append(
                 Moneda(powerups_folder + os.path.sep + "moneda1.png", 1, enemy.center_x, enemy.center_y,
                        self.tiempo_vida))
 
-        elif 7 <= number <= 9:
+        elif 6 <= number <= 7:
             self.lista_monedas.append(
                 Moneda(powerups_folder + os.path.sep + "moneda5.png", 5, enemy.center_x, enemy.center_y,
                        self.tiempo_vida))
@@ -1824,7 +1816,7 @@ class Game(arcade.View):
         self.room_draw()
 
         # contadores
-        arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
+        """arcade.draw_text(f"Score: {self.score}", 550, 615, arcade.color.WHITE, 15)
         arcade.draw_text(f"Time wave: {self.time_quotient}", 400, 615, arcade.color.WHITE, 15)
         arcade.draw_text(f": {self.player_sprite.money}", 490, 20, arcade.color.WHITE, 15)
 
@@ -1832,7 +1824,7 @@ class Game(arcade.View):
         self.display_vidas_personaje()
 
         # dibujar moneda
-        arcade.Sprite(powerups_folder + os.path.sep + "moneda1.png", center_x=480, center_y=30).draw()
+        arcade.Sprite(powerups_folder + os.path.sep + "moneda1.png", center_x=480, center_y=30).draw()"""
 
         # draw all sprites
         self.bomb_list.draw()
