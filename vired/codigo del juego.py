@@ -625,7 +625,7 @@ class Game(arcade.View):
         # Set up counters
         self.score = 0
         # -------------------------------------------------------------------------------
-        self.time = 0
+        self.time = 60
         self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
@@ -1239,11 +1239,11 @@ class Game(arcade.View):
         if self.time_quotient < 0:
             self.max_enemies = 0
             self.start = False
-            self.time = 0
+            self.time = 60
             self.enemy_death = True
 
     def create_boss(self):
-        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 430, 1, 4)
+        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 430, 100, 4)
         self.boss_list.append(boss)
 
     def update_boss(self):
