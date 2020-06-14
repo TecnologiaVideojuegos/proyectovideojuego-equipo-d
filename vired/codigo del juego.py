@@ -359,11 +359,8 @@ class Menu(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("VIR-ED", screen_width // 2, screen_height // 2,
-                         arcade.color.WHITE, font_size=30, anchor_x="center")
-        arcade.draw_text("Click para empezar", screen_width // 2, screen_height // 3,
-                         arcade.color.WHITE, font_size=30, anchor_x="center")
-        arcade.draw_texture_rectangle(320, 320, 640, 640, arcade.load_texture(pantallas_folder + os.path.sep + "inicio sin botones.jpg"))
+        arcade.draw_texture_rectangle(320, 320, 640, 640,
+                                      arcade.load_texture(pantallas_folder + os.path.sep + "inicio sin botones.jpg"))
 
     def on_mouse_press(self, _x, _y, _button, _modifiers):
         game_view = Game()
@@ -377,11 +374,8 @@ class GameOver(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("Game Over", screen_width // 2, screen_height // 2,
-                         arcade.color.WHITE, 30, anchor_x="center")
-        arcade.draw_text("Esc - Menu\n\nR - Reiniciar", screen_width // 2, screen_height // 3,
-                         arcade.color.WHITE, font_size=30, anchor_x="center")
-        arcade.draw_texture_rectangle(320, 320, 640, 640, arcade.load_texture(pantallas_folder + os.path.sep + "pantalla muerte.jpg"))
+        arcade.draw_texture_rectangle(320, 320, 640, 640,
+                                      arcade.load_texture(pantallas_folder + os.path.sep + "pantalla muerte.jpg"))
 
     def on_key_press(self, key, _modifiers):
         if key == arcade.key.ESCAPE:
@@ -403,11 +397,8 @@ class Pause(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("En Pausa", screen_width // 2, screen_height // 1.5,
-                         arcade.color.WHITE, 30, anchor_x="center")
-        arcade.draw_text("Enter - Reanudar\n\nEsc - Menu\n\nR - Reiniciar", screen_width // 2, screen_height // 4,
-                         arcade.color.WHITE, font_size=30, anchor_x="center")
-        arcade.draw_texture_rectangle(320, 320, 640, 640, arcade.load_texture(pantallas_folder + os.path.sep + "pausa sin botones.jpg"))
+        arcade.draw_texture_rectangle(320, 320, 640, 640,
+                                      arcade.load_texture(pantallas_folder + os.path.sep + "pausa sin botones.jpg"))
 
     def on_key_press(self, key, _modifiers):
         if key == arcade.key.ENTER:
@@ -445,10 +436,8 @@ class Winner(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("WINNER", screen_width // 2, 500,
-                         arcade.color.WHITE, 70, anchor_x="center")
-        arcade.draw_text("Esc - Menu\n\nR - Volver a jugar\n\nEnter - Créditos", screen_width // 2, screen_height // 3,
-                         arcade.color.WHITE, font_size=30, anchor_x="center", align="center")
+        arcade.draw_texture_rectangle(320, 320, 640, 640,
+                                      arcade.load_texture(pantallas_folder + os.path.sep + "pantalla victoria.jpg"))
 
     def on_key_press(self, key, _modifiers):
         if key == arcade.key.ESCAPE:
@@ -636,7 +625,7 @@ class Game(arcade.View):
         # Set up counters
         self.score = 0
         # -------------------------------------------------------------------------------
-        self.time = 60
+        self.time = 0
         self.cd = 0
         self.spawn_cd = 0
         self.cd_dissapear = 0
@@ -1088,7 +1077,7 @@ class Game(arcade.View):
             for bullet in self.bullet_list:
                 if arcade.check_for_collision_with_list(bullet,
                                                         self.obstaculos) or arcade.check_for_collision_with_list(
-                        bullet, self.obstaculos_2) or arcade.check_for_collision_with_list(bullet, self.cuerpos):
+                    bullet, self.obstaculos_2) or arcade.check_for_collision_with_list(bullet, self.cuerpos):
                     bullet.kill()
             if self.player_sprite.center_y <= 20:
                 self.player_sprite.center_y = 20
@@ -1250,11 +1239,11 @@ class Game(arcade.View):
         if self.time_quotient < 0:
             self.max_enemies = 0
             self.start = False
-            self.time = 60
+            self.time = 0
             self.enemy_death = True
 
     def create_boss(self):
-        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 430, 100, 4)
+        boss = Boss(sprites_folder + os.path.sep + "jefe final.png", 1, 300, 430, 1, 4)
         self.boss_list.append(boss)
 
     def update_boss(self):
@@ -1295,6 +1284,7 @@ class Game(arcade.View):
                     boss.number_of_hearts -= 1
                 if boss.number_of_hearts <= 0:
                     boss.kill()
+                    self.music.stop()
                     winner = Winner()
                     self.window.show_view(winner)
                     victory = arcade.load_sound(music_folder + os.path.sep + "victory.wav")
